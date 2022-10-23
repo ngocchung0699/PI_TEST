@@ -1,10 +1,11 @@
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <stdlib.h>
 #include <wiringPi.h>
-#include <lcd_i2c.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
 
+#define MQ_pin 12
 
 int main (void)
 {
@@ -12,25 +13,29 @@ int main (void)
     printf("|   Raspberry Pi wiringPi program    |\n");
     printf("+------------------------------------+\n");
     printf("|             Sensor name            |\n");
-    printf("|              Grove LCD             |\n");
+    printf("|              Grove MQ2             |\n");
     printf("|------------------------------------|\n");
     printf("|               Connect              |\n");
     printf("|    BCM (PI)      |    Sensor Pin   |\n");
     printf("|       GND        |       GND       |\n");
     printf("|       5V         |       VCC       |\n");
-    printf("|       SDA1       |       SDA       |\n");
-    printf("|       SCL1       |       SCL       |\n");
+    printf("|       12         |       DO        |\n");
+    printf("|       X          |       AO        |\n");
     printf("+------------------------------------+\n");
-    wiringPiSetupGpio () ;
-    LCD_Init();
 
-  while (1)
-  {
-    LCD_Clear();
-    delay(1);
-    LCD_SendChar(0, 2, "Hello World!", 12);
-    delay(500);
-  }
+    if ( wiringPiSetupGpio() == -1 ){ exit(1); }
 
-  return 0 ;
+    pinMode(MQ_pin, INPUT);
+    
+    while (1)
+    {
+        if(digitalRead(MQ_pin)){
+            printf("ON");
+        }
+        else{
+            printf("OFF");
+        }
+    }
+
+    return 0 ;
 }

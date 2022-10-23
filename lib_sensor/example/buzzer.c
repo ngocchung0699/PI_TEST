@@ -1,10 +1,11 @@
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <stdlib.h>
 #include <wiringPi.h>
-#include <lcd_i2c.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
 
+#define buzzer_pin 21
 
 int main (void)
 {
@@ -12,25 +13,27 @@ int main (void)
     printf("|   Raspberry Pi wiringPi program    |\n");
     printf("+------------------------------------+\n");
     printf("|             Sensor name            |\n");
-    printf("|              Grove LCD             |\n");
+    printf("|            Grove Buzzer            |\n");
     printf("|------------------------------------|\n");
     printf("|               Connect              |\n");
     printf("|    BCM (PI)      |    Sensor Pin   |\n");
     printf("|       GND        |       GND       |\n");
     printf("|       5V         |       VCC       |\n");
-    printf("|       SDA1       |       SDA       |\n");
-    printf("|       SCL1       |       SCL       |\n");
+    printf("|       X          |       NC        |\n");
+    printf("|       21         |       SIG       |\n");
     printf("+------------------------------------+\n");
-    wiringPiSetupGpio () ;
-    LCD_Init();
 
-  while (1)
-  {
-    LCD_Clear();
-    delay(1);
-    LCD_SendChar(0, 2, "Hello World!", 12);
-    delay(500);
-  }
+    if ( wiringPiSetupGpio() == -1 ){ exit(1); }
 
-  return 0 ;
+    pinMode(buzzer_pin, OUTPUT);
+    
+    while (1)
+    {
+        digitalWrite(buzzer_pin, HIGH);
+        delay(1000);
+        digitalWrite(buzzer_pin, LOW);
+        delay(1000);
+    }
+
+    return 0 ;
 }

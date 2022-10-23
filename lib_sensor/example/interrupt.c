@@ -18,7 +18,6 @@ int main (void)
   wiringPiSetupGpio () ;
   pinMode(pin, INPUT);
 
-
   wiringPiISR (pin, INT_EDGE_FALLING, &myInterrupt) ;  // 
 
   while (1)
