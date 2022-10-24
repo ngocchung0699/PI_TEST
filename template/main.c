@@ -12,9 +12,9 @@ int main( void )
 	printf( "Raspberry Pi wiringPi program\n" );
 	
 	if ( wiringPiSetupGpio() == -1 ){ exit( 1 ); }
+	pinMode(26, OUTPUT);
 	while ( 1 ){
-		printf("a0: %d", ads_read(A0));
-		delay(1000);
+		digitalWrite(26,HIGH);
 	}
 	return(0);
 }
