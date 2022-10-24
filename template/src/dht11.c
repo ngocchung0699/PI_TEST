@@ -46,13 +46,12 @@ bool read_dht11(float *data)
 
 	if ( (j >= 40) && (dht11_dat[4] == ( (dht11_dat[0] + dht11_dat[1] + dht11_dat[2] + dht11_dat[3]) & 0xFF) ) ){
 
-		// if(dht11_dat[1]/10 > 0){	data[0] = dht11_dat[0] + dht11_dat[1]*0.01;}
-		// else{ 						data[0] = dht11_dat[0] + dht11_dat[1]*0.1;}
+		if(dht11_dat[1]/10 > 0){	data[0] = dht11_dat[0] + dht11_dat[1]*0.01;}
+		else{ 						data[0] = dht11_dat[0] + dht11_dat[1]*0.1;}
 
-		// if(dht11_dat[3]/10 > 0){	data[1] = dht11_dat[2] + dht11_dat[3]*0.01;}	// (F = C * 9. / 5. + 32)
-		// else{ 						data[1] = dht11_dat[2] + dht11_dat[3]*0.1;}  
-		data[0] = dht11_dat[0];
-		data[1] = dht11_dat[2];
+		if(dht11_dat[3]/10 > 0){	data[1] = dht11_dat[2] + dht11_dat[3]*0.01;}	// (F = C * 9. / 5. + 32)
+		else{ 						data[1] = dht11_dat[2] + dht11_dat[3]*0.1;}  
+
 		return true;
 	}
 	else  {
