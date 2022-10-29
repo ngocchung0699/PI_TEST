@@ -1,6 +1,8 @@
 #ifndef	__TIMER_H__
 #define	__TIMER_H__
 
+#include <stdint.h>
+
 #define	PAGE_SIZE		(4*1024)
 #define	BLOCK_SIZE		(4*1024)
 
@@ -9,10 +11,10 @@
 #define CLOCKHZ 1000000
 
 struct timer_regs {
-    reg32 control_status;
-    reg32 counter_lo;
-    reg32 counter_hi;
-    reg32 compare[4];
+    uint32_t control_status;
+    uint32_t counter_lo;
+    uint32_t counter_hi;
+    uint32_t compare[4];
 };
 
 enum vc_irqs {
@@ -28,8 +30,8 @@ enum vc_irqs {
 void timer_init();
 void handle_timer_1();
 void handle_timer_3();
-void timer_sleep(u32 ms);
-u64 timer_get_ticks();
+void timer_sleep(uint32_t ms);
+uint64_t timer_get_ticks();
 
 
 #endif
