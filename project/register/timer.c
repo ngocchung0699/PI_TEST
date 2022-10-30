@@ -21,56 +21,44 @@ void timer_init(){
     close(memfd);
 }
 
-const uint32_t interval_1 = CLOCKHZ;
-uint32_t cur_val_1 = 0;
+/* Read the System Timer Counter (64-bits) */
+uint64_t timer_read(void)
+{
+    volatile uint32_t* paddr;
+    uint32_t hi, lo;
+    uint64_t st;
 
-const uint32_t interval_3 = CLOCKHZ / 4;
-uint32_t cur_val_3 = 0;
+    if (TIMER_BASE==MAP_FAILED)
+	return 0;
 
-void timer_init() {
-    cur_val_1 = REGS_TIMER->counter_lo;
-    cur_val_1 += interval_1;
-    REGS_TIMER->compare[1] = cur_val_1;
+    paddr = TIMER_BASE + TIMER_CHI/4;
+    hi = *paddr;
 
-    cur_val_3 = REGS_TIMER->counter_lo;
-    cur_val_3 += interval_3;
-    REGS_TIMER->compare[3] = cur_val_3;
-}
-
-void handle_timer_1() {
-    cur_val_1 += interval_1;
-    REGS_TIMER->compare[1] = cur_val_1;
-    REGS_TIMER->control_status |= SYS_TIMER_IRQ_1;
-
-    //printf("Timer 1 received.\n");
-}
-
-void handle_timer_3() {
-    cur_val_3 += interval_3;
-    REGS_TIMER->compare[3] = cur_val_3;
-    REGS_TIMER->control_status |= SYS_TIMER_IRQ_3;
-
-    //printf("Timer 3 received.\n");
-}
-
-uint64_t timer_get_ticks() {
-    uint32_t hi = REGS_TIMER->counter_hi;
-    uint32_t lo = REGS_TIMER->counter_lo;
-
-    //double check hi value didn't change after setting it...
-    if (hi != REGS_TIMER->counter_hi) {
-        hi = REGS_TIMER->counter_hi;
-        lo = REGS_TIMER->counter_lo;
+    paddr = TIMER_BASE + TIMER_CLO/4;
+    lo = *paddr;
+    
+    paddr = TIMER_BASE + TIMER_CHI/4;
+    st = *paddr;
+    
+    /* Test for overflow */
+    if (st == hi)
+    {
+        st <<= 32;
+        st += lo;
     }
-
-    return ((uint64_t)hi << 32) | lo;
+    else
+    {
+        st <<= 32;
+        paddr = TIMER_BASE + TIMER_CLO/4;
+        st += *paddr;
+    }
+    return st;
 }
 
-//sleep in milliseconds.
-void timer_sleep(uint32_t ms) {
-    uint64_t start = timer_get_ticks();
+/* Delays for the specified number of microseconds with offset */
+void bcm2835_st_delay(uint64_t ms)
+{
+    uint64_t compare = ms;
 
-    while(timer_get_ticks() < start + (ms * 1000)) {
-
-    }
+    while(timer_read() < compare);
 }

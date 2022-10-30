@@ -8,30 +8,24 @@
 
 #define TIMER_BASE                   0x7e003000
 
-#define CLOCKHZ 1000000
+#define TIMER_CS        (0x00/4)
+#define TIMER_CLO       (0x04/4)
+#define TIMER_CHI       (0x08/4)
 
-struct timer_regs {
-    uint32_t control_status;
-    uint32_t counter_lo;
-    uint32_t counter_hi;
-    uint32_t compare[4];
-};
+#define TIMER_C0       (0x0c/4)
+#define TIMER_C1       (0x10/4)
+#define TIMER_C2       (0x14/4)
+#define TIMER_C3       (0x18/4)
 
-enum vc_irqs {
-    SYS_TIMER_IRQ_0 = 1,
-    SYS_TIMER_IRQ_1 = 2,
-    SYS_TIMER_IRQ_2 = 4,
-    SYS_TIMER_IRQ_3 = 8,
-    AUX_IRQ = (1 << 29)
-};
-
-#define REGS_TIMER ((struct timer_regs *)(TIMER_BASE))
+#define TIMER_M0       0
+#define TIMER_M1       1
+#define TIMER_M2       2
+#define TIMER_M3       3
 
 void timer_init();
-void handle_timer_1();
-void handle_timer_3();
-void timer_sleep(uint32_t ms);
-uint64_t timer_get_ticks();
+uint32_t timer_peripheral_read(volatile uint32_t* paddr);
+uint64_t timer_read(void)
+
 
 
 #endif
