@@ -7,21 +7,30 @@
 #include <unistd.h>
 #include <time.h>
 #include <stdint.h>
-#include "timer.h"
+#include "timer_sys.h"
 #include "gpio.h"
+#include "sys/bcm2835.h"
 
-
+#define PIN 26
 
 int main() 
 {
-    pinMode(26,OUTPUT);
-    timer_init();
+    bcm2835_init();
+    bcm2835_gpio_fsel(PIN, BCM2835_GPIO_FSEL_OUTP);
     while (1)
     {
-        digitalWrite(26,1);
-        timer_delay(1);
-        digitalWrite(26,0);
-        timer_delay(1);
+                // Turn it on
+        bcm2835_gpio_write(PIN, HIGH);
+        
+        // wait a bit
+        bcm2835_delay(500);
+        
+        // turn it off
+        bcm2835_gpio_write(PIN, LOW);
+        
+        // wait a bit
+        bcm2835_delay(500);
     }
+    bcm2835_close();
     return (EXIT_SUCCESS);
 }

@@ -10,7 +10,7 @@
 #include <stdbool.h>
 #include "timer.h"
 
-static volatile unsigned int *timer ;
+volatile uint32_t *timer ;
 
 void timer_init(){
     int memfd = open("/dev/gpiomem", O_RDWR | O_SYNC);
@@ -20,7 +20,7 @@ void timer_init(){
     close(memfd);
 }
 
-/* Read the System Timer Counter (64-bits) */
+/*
 uint64_t timer_read(void)
 {
 
@@ -33,7 +33,7 @@ uint64_t timer_read(void)
     
     st = *(timer + TIMER_CHI/4);;
     
-    /* Test for overflow */
+
     if (st == hi)
     {
         st <<= 32;
@@ -47,10 +47,51 @@ uint64_t timer_read(void)
     return st;
 }
 
-/* Delays for the specified number of microseconds with offset */
+
 void timer_delay(uint64_t ms)
 {
     uint64_t compare = ms;
 
     while(timer_read() < compare);
+}
+*/
+
+/* Read the System Timer Counter (64-bits) */
+uint64_t timer_read(void)
+{
+    volatile uint32_t* paddr;
+    uint32_t hi, lo;
+    uint64_t st;
+
+    paddr = timer + TIMER_CHI/4;
+    hi = bcm2835_peri_read(paddr);
+
+    paddr = timer + TIMER_CLO/4;
+    lo = bcm2835_peri_read(paddr);
+    
+    paddr = timer + TIMER_CHI/4;
+    st = bcm2835_peri_read(paddr);
+    
+    /* Test for overflow */
+    if (st == hi)
+    {
+        st <<= 32;
+        st += lo;
+    }
+    else
+    {
+        st <<= 32;
+        paddr = timer + TIMER_CLO/4;
+        st += bcm2835_peri_read(paddr);
+    }
+    return st;
+}
+
+/* Delays for the specified number of microseconds with offset */
+void timer_delay(uint64_t offset_micros, uint64_t micros)
+{
+    uint64_t compare = offset_micros + micros;
+
+    while(timer_read() < compare)
+	;
 }

@@ -1,5 +1,5 @@
-#ifndef	__GPIO_H__
-#define	__GPIO_H__
+#ifndef	__LIB_H__
+#define	__LIB_H__
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,13 +12,15 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define BASE_ADR                    0xfe000000
+
 #define INPUT 0
 #define OUTPUT 1
 
 #define LOW 0
 #define HIGH 1
 
-#define GPIO_BASE                   0xfe200000
+#define GPIO_ADR                    0x200000
 
 #define GPFSEL0                     (0x00/4)
 #define GPFSEL1                     (0x04/4)
@@ -66,6 +68,7 @@
 
 #define PWM0_ADR 0x7e20c000
 #define PWM1_ADR 0x7e20c800
+
 
 
 void pinMode(int pin, int mode);
