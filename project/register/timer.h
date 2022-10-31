@@ -24,8 +24,7 @@
 
 void timer_init();
 uint32_t timer_peripheral_read(volatile uint32_t* paddr);
-uint64_t timer_read(void)
-
-
+uint64_t timer_read(void);
+void timer_delay(uint64_t ms);
 
 #endif

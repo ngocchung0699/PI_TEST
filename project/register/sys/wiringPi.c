@@ -349,7 +349,8 @@ static int pinToGpioR1 [64] =
    0,  1,				// I2C  - SDA1, SCL1				wpi  8 -  9
    8,  7,				// SPI  - CE1, CE0				wpi 10 - 11
   10,  9, 11, 				// SPI  - MOSI, MISO, SCLK			wpi 12 - 14
-  14, 15,				// UART - Tx, Rx				wpi 15 - 16
+  14, 15,				// UART - Tx, Rx				wpi 15 - 16t
+
 
 // Padding:
 

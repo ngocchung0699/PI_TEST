@@ -14,31 +14,24 @@ static volatile unsigned int *timer ;
 
 void timer_init(){
     int memfd = open("/dev/mem", O_RDWR | O_SYNC);
-
-    timer = (uint32_t *)mmap(0, BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, memfd, TIMER_BASE) ;
+    timer = (uint32_t *)mmap(NULL, BLOCK_SIZE, (PROT_READ | PROT_WRITE), MAP_SHARED, memfd, TIMER_BASE);
     if (timer == MAP_FAILED)
-        printf("mmap gpio failed: %s\n", strerror(errno));
+        printf("mmap timer failed: %s\n", strerror(errno));
     close(memfd);
 }
 
 /* Read the System Timer Counter (64-bits) */
 uint64_t timer_read(void)
 {
-    volatile uint32_t* paddr;
+
     uint32_t hi, lo;
     uint64_t st;
 
-    if (TIMER_BASE==MAP_FAILED)
-	return 0;
+    hi = *(timer + TIMER_CHI/4);
 
-    paddr = TIMER_BASE + TIMER_CHI/4;
-    hi = *paddr;
-
-    paddr = TIMER_BASE + TIMER_CLO/4;
-    lo = *paddr;
+    lo = *(timer + TIMER_CLO/4);;
     
-    paddr = TIMER_BASE + TIMER_CHI/4;
-    st = *paddr;
+    st = *(timer + TIMER_CHI/4);;
     
     /* Test for overflow */
     if (st == hi)
@@ -49,14 +42,13 @@ uint64_t timer_read(void)
     else
     {
         st <<= 32;
-        paddr = TIMER_BASE + TIMER_CLO/4;
-        st += *paddr;
+        st += *(timer + TIMER_CLO/4);
     }
     return st;
 }
 
 /* Delays for the specified number of microseconds with offset */
-void bcm2835_st_delay(uint64_t ms)
+void timer_delay(uint64_t ms)
 {
     uint64_t compare = ms;
 
