@@ -68,7 +68,6 @@
 #define PWM1_ADR 0x7e20c800
 
 
-
 void pinMode(int pin, int mode);
 void digitalWrite(int pin, int value);
 bool digitalRead(int pin);
