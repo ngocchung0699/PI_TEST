@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <stdint.h>
-#include "timer_sys.h"
+#include "timer.h"
 #include "gpio.h"
 
 
@@ -15,12 +15,13 @@
 int main() 
 {
     pinMode(26,OUTPUT);
+    timer_init();
     while (1)
     {
         digitalWrite(26,1);
-        delay_sys_ms(1);
+        timer_delay(1);
         digitalWrite(26,0);
-        delay_sys_ms(1);
+        timer_delay(1);
     }
     return (EXIT_SUCCESS);
 }

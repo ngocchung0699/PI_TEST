@@ -13,7 +13,7 @@
 static volatile unsigned int *timer ;
 
 void timer_init(){
-    int memfd = open("/dev/mem", O_RDWR | O_SYNC);
+    int memfd = open("/dev/gpiomem", O_RDWR | O_SYNC);
     timer = (uint32_t *)mmap(NULL, BLOCK_SIZE, (PROT_READ | PROT_WRITE), MAP_SHARED, memfd, TIMER_BASE);
     if (timer == MAP_FAILED)
         printf("mmap timer failed: %s\n", strerror(errno));

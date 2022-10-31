@@ -84,16 +84,11 @@ static uint8_t GPIO_GPLEV [] =
 
 
 void pinMode(int pin, int mode){
-    int memfd = open("/dev/mem", O_RDWR | O_SYNC);
+    int memfd = open("/dev/gpiomem", O_RDWR | O_SYNC);
     gpio = (uint32_t *)mmap(NULL, BLOCK_SIZE, (PROT_READ | PROT_WRITE), MAP_SHARED, memfd, GPIO_BASE);
     if (gpio == MAP_FAILED)
         printf("mmap gpio failed: %s\n", strerror(errno));    
     close(memfd);
-
-    pwm = (uint32_t *)mmap(NULL, BLOCK_SIZE, (PROT_READ | PROT_WRITE), MAP_SHARED, memfd, PWM0_ADR);
-    if (pwm == MAP_FAILED)
-        printf("mmap pwm failed: %s\n", strerror(errno));    
-
 
     if(mode == INPUT){
         *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) ;
