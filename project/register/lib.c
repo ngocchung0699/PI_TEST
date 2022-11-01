@@ -172,7 +172,7 @@ uint64_t sys_timer_read(void)
     }
     return st;
 }
-
+unsigned long long abc;
 /* Delays for the specified number of microseconds with offset */
 void sys_timer_delay(uint64_t offset_micros, uint64_t micros)
 {
@@ -187,4 +187,12 @@ uint32_t peri_read(volatile uint32_t* paddr)
     ret = *paddr;
     return ret;
 }
+
+unsigned long millis(void){
+    return sys_timer_read()/1000;
+}
+unsigned long micros(){
+    return sys_timer_read();
+}
+
 

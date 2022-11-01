@@ -97,6 +97,9 @@ void delay_ms(uint64_t milis);
 void delay_us(uint64_t micros);
 uint64_t sys_timer_read(void);
 void sys_timer_delay(uint64_t offset_micros, uint64_t micros);
+unsigned long millis(void);
+unsigned long micros(void);
+
 uint32_t peri_read(volatile uint32_t* paddr);
 
 //---------PWM---------//
