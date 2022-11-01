@@ -12,7 +12,16 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define	BLOCK_SIZE		            0x01000000
+
 #define BASE_ADR                    0xfe000000
+
+static volatile uint32_t* base;
+
+
+void lib_init();
+
+//--------GPIO----------//
 
 #define INPUT 0
 #define OUTPUT 1
@@ -20,7 +29,7 @@
 #define LOW 0
 #define HIGH 1
 
-#define GPIO_ADR                    0x200000
+#define GPIO_REG                    (0x200000/4)
 
 #define GPFSEL0                     (0x00/4)
 #define GPFSEL1                     (0x04/4)
@@ -53,27 +62,46 @@
 #define GPIO_PUP_PDN_CNTRL_REG2     (0xec/4)
 #define GPIO_PUP_PDN_CNTRL_REG3     (0xf0/4)
 
-#define	FSEL_INPUT		0b000
-#define	FSEL_OUTPUT		0b001
-#define	FSEL_ALT0		0b100
-#define	FSEL_ALT1		0b101
-#define	FSEL_ALT2		0b110
-#define	FSEL_ALT3		0b111
-#define	FSEL_ALT4		0b011
-#define	FSEL_ALT5		0b010
-
-#define	PAGE_SIZE		(4*1024)
-#define	BLOCK_SIZE		(4*1024)
-
-
-#define PWM0_ADR 0x7e20c000
-#define PWM1_ADR 0x7e20c800
-
-
+#define	FSEL_INPUT		            0b000
+#define	FSEL_OUTPUT		            0b001
+#define	FSEL_ALT0		            0b100
+#define	FSEL_ALT1		            0b101
+#define	FSEL_ALT2		            0b110
+#define	FSEL_ALT3		            0b111
+#define	FSEL_ALT4		            0b011
+#define	FSEL_ALT5		            0b010
 
 void pinMode(int pin, int mode);
 void digitalWrite(int pin, int value);
 bool digitalRead(int pin);
 
+//--------TIMER--------//
+
+#define TIMER_REG                   (0x3000/4)
+
+#define TIMER_CS                    (0x0000/4)
+#define TIMER_CLO                   (0x0004/4)
+#define TIMER_CHI                   (0x0008/4)
+
+#define TIMER_C0                    (0x000c/4)
+#define TIMER_C1                    (0x0010/4)
+#define TIMER_C2                    (0x0014/4)
+#define TIMER_C3                    (0x0018/4)
+
+#define TIMER_M0                    0
+#define TIMER_M1                    1
+#define TIMER_M2                    2
+#define TIMER_M3                    3
+
+void delay_ms(uint64_t milis);
+void delay_us(uint64_t micros);
+uint64_t sys_timer_read(void);
+void sys_timer_delay(uint64_t offset_micros, uint64_t micros);
+uint32_t peri_read(volatile uint32_t* paddr);
+
+//---------PWM---------//
+
+
 
 #endif
+

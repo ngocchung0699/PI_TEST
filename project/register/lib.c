@@ -11,7 +11,8 @@
 #include <stdbool.h>
 #include "lib.h"
 
-static volatile unsigned int *gpio ;
+static volatile uint32_t *timer ;
+static volatile uint32_t *gpio ;
 
 // gpio_GPFSEL:
 //	Map a BCM_GPIO pin to it's Function Selection
@@ -81,20 +82,37 @@ static uint8_t GPIO_GPLEV [] =
 } ;
 
 
-void pinMode(int pin, int mode){
-    
 
+void lib_init(){
+    int memfd;
+    
+    if ((memfd = open("/dev/mem", O_RDWR | O_SYNC) ) < 0) 
+	{
+	  printf("base_init: Unable to open /dev/mem: %s\n", strerror(errno));
+      exit(1);
+	}
+        
+    base = (uint32_t *)mmap(NULL, BLOCK_SIZE, (PROT_READ | PROT_WRITE), MAP_SHARED, memfd, BASE_ADR);
+    if (base == MAP_FAILED)
+        printf("mmap gpio failed: %s\n", strerror(errno));  
+        
+    gpio = base + GPIO_REG;
+    timer = base + TIMER_REG;
+    close(memfd);
+}
+
+void pinMode(int pin, int mode){
     if(mode == INPUT){
         *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) ;
     }
     else if (mode == OUTPUT)
-      *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (1 << GPIO_SHIFT[pin]) ;
+        *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_OUTPUT << GPIO_SHIFT[pin]) ;
     else{}
 }
 
 void digitalWrite(int pin, int value){   
-    if (value == LOW){ *(gpio + GPIO_GPCLR [pin]) = 1 << pin;}
-    else{ *(gpio + GPIO_GPSET [pin]) = 1 << pin;}
+    if (value == LOW)   { *(gpio + GPIO_GPCLR [pin]) = 1 << pin;}
+    if (value == HIGH)  { *(gpio + GPIO_GPSET [pin]) = 1 << pin;}
 }
 bool digitalRead(int pin){
     if((*(gpio + GPIO_GPLEV [pin]) & (1 << (pin & 31))) != 0){
@@ -104,5 +122,69 @@ bool digitalRead(int pin){
         return LOW;
     }
 }
+/* miliseconds */
+void delay_ms(uint64_t milis)
+{
+    delay_us(milis * 1000);
+}
 
+
+/* microseconds */
+void delay_us(uint64_t micros)
+{
+    uint64_t        start;
+
+    start =  sys_timer_read();
+
+    sys_timer_delay(start, micros);
+}
+
+/* Read the System Timer Counter (64-bits) */
+uint64_t sys_timer_read(void)
+{
+    volatile uint32_t* paddr;
+    uint32_t hi, lo;
+    uint64_t st;
+
+    if (timer==MAP_FAILED)
+	return 0;
+
+    paddr = timer + TIMER_CHI;
+    hi = peri_read(paddr);
+
+    paddr = timer + TIMER_CLO;
+    lo = peri_read(paddr);
+    
+    paddr = timer + TIMER_CHI;
+    st = peri_read(paddr);
+    
+    /* Test for overflow */
+    if (st == hi)
+    {
+        st <<= 32;
+        st += lo;
+    }
+    else
+    {
+        st <<= 32;
+        paddr = timer + TIMER_CLO;
+        st += peri_read(paddr);
+    }
+    return st;
+}
+
+/* Delays for the specified number of microseconds with offset */
+void sys_timer_delay(uint64_t offset_micros, uint64_t micros)
+{
+    uint64_t compare = offset_micros + micros;
+
+    while(sys_timer_read() < compare);
+}
+
+uint32_t peri_read(volatile uint32_t* paddr)
+{
+    uint32_t ret;
+    ret = *paddr;
+    return ret;
+}
 
