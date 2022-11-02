@@ -1,28 +1,18 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <sys/mman.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <string.h>
-#include <unistd.h>
-#include <time.h>
-#include <stdint.h>
 #include "lib.h"
-
-#define PIN 26
-
-int main() 
-{   
-    lib_init();
-    pinMode(PIN, OUTPUT);
-    
-    while (1)
-    {
-        digitalWrite(PIN, HIGH);
-        delay_us(100);
-        digitalWrite(PIN, LOW);
-        delay_us(100);
-    }
-
-    return (EXIT_SUCCESS);
+#include "lib_uart.h"
+ 
+int main()
+{
+    int fd;
+    if(wiringPiSetupGpio() < 0)return 1;
+    if((fd = serialOpen("/dev/serial0",9600)) < 0)return 1;
+    printf("serial test start ...\n");
+    serialPrintf(fd,"Hello World!!!\n");
+    while(1)
+    {  
+        serialPutchar(fd,serialGetchar(fd));
+    }  
+    serialClose(fd);
+    return 0;
 }
