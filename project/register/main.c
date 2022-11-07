@@ -1,17 +1,32 @@
-#include <stdio.h>
+#include "stdio.h"
+#include <stdlib.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <string.h>
+#include <unistd.h>
+#include <time.h>
+#include <stdint.h>
+#include <stdbool.h>
 #include "lib.h"
- 
+
+
+#define PIN 26
+
 int main()
 {
-    int fd;
-    if(wiringPiSetupGpio() < 0)return 1;
-    if((fd = serialOpen("/dev/serial0",9600)) < 0)return 1;
-    printf("serial test start ...\n");
-    serialPrintf(fd,"Hello World!!!\n");
+    lib_init();
+
     while(1)
     {  
-        serialPutchar(fd,serialGetchar(fd));
+        if(digitalRead(26) == HIGH){
+            printf("high \n");
+        }
+        else{
+            printf("low \n");
+        }
+        delay_ms(1000);
     }  
-    serialClose(fd);
+    lib_close();
     return 0;
 }

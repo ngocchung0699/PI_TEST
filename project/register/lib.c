@@ -287,7 +287,6 @@ static void gpio_low_disable(int pin){
 
 
 static bool gpio_eds_flag(int pin){
-    bool 
     if((*(gpio + GPEDS0) & (1 << (pin & 31))) != 0){
         return HIGH;
     }
@@ -295,8 +294,9 @@ static bool gpio_eds_flag(int pin){
         return LOW;
     }
 }
-static bool gpio_eds_clear_flag(int pin){
 
+static bool gpio_eds_clear_flag(int pin){
+    *(gpio + GPEDS0) & (1 << (pin & 31));
 }
 
 static void *iqr_handler (UNU void *arg)
