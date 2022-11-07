@@ -286,7 +286,8 @@ static void gpio_low_disable(int pin){
 }
 
 
-static bool gpio_eds(int pin){
+static bool gpio_eds_flag(int pin){
+    bool 
     if((*(gpio + GPEDS0) & (1 << (pin & 31))) != 0){
         return HIGH;
     }
@@ -294,7 +295,9 @@ static bool gpio_eds(int pin){
         return LOW;
     }
 }
+static bool gpio_eds_clear_flag(int pin){
 
+}
 
 static void *iqr_handler (UNU void *arg)
 {
@@ -326,7 +329,6 @@ void iqr_init(int pin, int mode, void (*function)(void)){
     pthread_mutex_lock (&pinMutex) ;
     pthread_create (&threadId, NULL, iqr_handler, NULL) ;
     pthread_mutex_unlock (&pinMutex) ;
-
 }
 
 void iqr_close(int pin, int mode){
