@@ -20,14 +20,13 @@ static volatile uint32_t* base;
 
 
 void lib_init();
+void lib_close();
 
 //--------GPIO----------//
 
-#define INPUT 0
-#define OUTPUT 1
 
-#define LOW 0
-#define HIGH 1
+
+
 
 #define GPIO_REG                    (0x200000/4)
 
@@ -47,8 +46,8 @@ void lib_init();
 #define GPEDS1                      (0x44/4)
 #define GPREN0                      (0x4c/4)
 #define GPREN1                      (0x50/4)
-#define GPPEN0                      (0x58/4)
-#define GPPEN1                      (0x5c/4)
+#define GPFEN0                      (0x58/4)
+#define GPFEN1                      (0x5c/4)
 #define GPHEN0                      (0x64/4)
 #define GPHEN1                      (0x68/4)
 #define GPLEN0                      (0x70/4)
@@ -70,6 +69,28 @@ void lib_init();
 #define	FSEL_ALT3		            0b111
 #define	FSEL_ALT4		            0b011
 #define	FSEL_ALT5		            0b010
+
+typedef enum
+{
+    INPUT           = 0x00,
+    OUTPUT          = 0x01
+} MODE;
+
+typedef enum
+{
+    NO_PULL         = 0x00,   /*!< Off ? disable pull-up/down 0b00 */
+    INPUT_PULLUP    = 0x01,   /*!< Enable Pull Down control 0b01 */
+    INPUT_PULLDOWN  = 0x02    /*!< Enable Pull Up control 0b10  */
+} PU_PD_CONTROL;
+
+typedef enum
+{
+    LOW,
+    HIGH,
+    RISING,
+    FALLING
+} MODE_STATUS;
+
 
 void pinMode(int pin, int mode);
 void digitalWrite(int pin, int value);
@@ -105,6 +126,11 @@ uint32_t peri_read(volatile uint32_t* paddr);
 //---------PWM---------//
 
 
+
+//---------IRQ---------//
+
+void iqr_setup(int pin, int mode, void (*function)(void));
+void iqr_close(int pin, int mode);
 
 #endif
 

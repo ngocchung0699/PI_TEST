@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 	}
 
 	// wait a bit
-	delay(500);
+	delay(5000);
     }
 
     bcm2835_close();

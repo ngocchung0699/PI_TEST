@@ -1,6 +1,3 @@
-#ifndef	__LIB_UART_H__
-#define	__LIB_UART_H__
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -17,4 +14,3 @@ extern int   serialGetchar   (const int fd) ;
 }
 #endif
 
-#endif
