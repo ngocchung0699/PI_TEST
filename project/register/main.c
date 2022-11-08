@@ -15,7 +15,7 @@
 int i=0;
 void iqr(){
     i++;
-    gpio_eds_clear_flag(PIN);
+    
 }
 
 int main()
