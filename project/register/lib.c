@@ -167,7 +167,7 @@ void pinMode(int pin, int mode){
     else if (mode == OUTPUT)
         *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_OUTPUT << GPIO_SHIFT[pin]) ;
         *(gpio + GPIO_GPFSEL_PUD[pin]) = (*(gpio + GPIO_GPFSEL_PUD[pin]) & ~(3 << GPIO_PUP_PDN_CNTRL[pin]) | (NO_PULL << GPIO_PUP_PDN_CNTRL[pin])) ;
-    else{}
+
 }
 
 void digitalWrite(int pin, int value){   

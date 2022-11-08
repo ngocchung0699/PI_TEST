@@ -10,22 +10,22 @@
 #include <stdbool.h>
 #include "lib.h"
 
-
 #define PIN 26
+
+int i=0;
+void iqr(){
+    i++;
+    gpio_eds_clear_flag(PIN);
+}
 
 int main()
 {
     lib_init();
-
+    iqr_setup(PIN, HIGH, iqr);
     while(1)
     {  
-        if(digitalRead(26) == HIGH){
-            printf("high \n");
-        }
-        else{
-            printf("low \n");
-        }
-        delay_ms(1000);
+        printf("value: %d", i);
+        delay_ms(100);
     }  
     lib_close();
     return 0;

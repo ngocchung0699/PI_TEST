@@ -3,12 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/mman.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <string.h>
 #include <unistd.h>
-#include <time.h>
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -23,8 +18,6 @@ void lib_init();
 void lib_close();
 
 //--------GPIO----------//
-
-
 
 
 
