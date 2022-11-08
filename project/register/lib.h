@@ -132,5 +132,8 @@ uint32_t peri_read(volatile uint32_t* paddr);
 void iqr_setup(int pin, int mode, void (*function)(void));
 void iqr_close(int pin, int mode);
 
+bool gpio_eds_flag(int pin);
+void gpio_eds_clear_flag(int pin);
+
 #endif
 

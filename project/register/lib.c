@@ -15,6 +15,9 @@
 static volatile uint32_t *timer ;
 static volatile uint32_t *gpio ;
 
+static volatile int    pinPass = -1 ;
+static void (*isrFunctions [64])(void) ;
+
 // gpio_GPFSEL:
 //	Map a BCM_GPIO pin to it's Function Selection
 //	control port. (GPFSEL 0-5)
@@ -232,7 +235,7 @@ uint64_t sys_timer_read(void)
     }
     return st;
 }
-unsigned long long abc;
+
 /* Delays for the specified number of microseconds with offset */
 void sys_timer_delay(uint64_t offset_micros, uint64_t micros)
 {
@@ -286,7 +289,8 @@ static void gpio_low_disable(int pin){
 }
 
 
-static bool gpio_eds_flag(int pin){
+bool gpio_eds_flag(int pin)
+{
     if((*(gpio + GPEDS0) & (1 << (pin & 31))) != 0){
         return HIGH;
     }
@@ -295,38 +299,49 @@ static bool gpio_eds_flag(int pin){
     }
 }
 
-static bool gpio_eds_clear_flag(int pin){
+void gpio_eds_clear_flag(int pin)
+{
     *(gpio + GPEDS0) & (1 << (pin & 31));
 }
 
-static void *iqr_handler (UNU void *arg)
+static void *iqr_handler (void *arg)
 {
-    for (;;)
-        if (waitForInterrupt (myPin, -1) > 0)
-        isrFunctions [myPin] () ;
+    int pin = pinPass;
+    for (;;){
+        if(gpio_eds_flag(pin)){
+            isrFunctions [pin]();
+        }
+    }
+
     return NULL ;
 }
+
+
 
 void iqr_init(int pin, int mode, void (*function)(void)){
     pthread_t threadId ;
 
     if(mode == RISING){
-        gpio_rising_enable();
+        gpio_rising_enable(pin);
     }
     else if(mode == FALLING){
-        gpio_falling_enable();
+        gpio_falling_enable(pin);
     }
     else if(mode == HIGH){
-        gpio_high_enable();
+        gpio_high_enable(pin);
     }
     else if(mode == LOW){
-        gpio_low_enable();
+        gpio_low_enable(pin);
     }
     else{
         printf("Select interrupt mode false");
     }
+
+    isrFunctions [pin] = function ;
     
+
     pthread_mutex_lock (&pinMutex) ;
+    pinPass = pin;
     pthread_create (&threadId, NULL, iqr_handler, NULL) ;
     pthread_mutex_unlock (&pinMutex) ;
 }
