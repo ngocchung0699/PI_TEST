@@ -289,7 +289,7 @@ static void gpio_low_disable(int pin){
 }
 
 
-bool gpio_eds_flag(int pin)
+static bool gpio_eds_flag(int pin)
 {
     if((*(gpio + GPEDS0) & (1 << (pin & 31))) != 0){
         return HIGH;
@@ -299,7 +299,7 @@ bool gpio_eds_flag(int pin)
     }
 }
 
-void gpio_eds_clear_flag(int pin)
+static void gpio_eds_clear_flag(int pin)
 {
     *(gpio + GPEDS0) & (1 << (pin & 31));
 }
@@ -310,6 +310,7 @@ static void *iqr_handler (void *arg)
     for (;;){
         if(gpio_eds_flag(pin)){
             isrFunctions [pin]();
+            gpio_eds_clear_flag(pin);
         }
     }
 
