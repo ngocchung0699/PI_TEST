@@ -341,6 +341,30 @@ void pwm_setup(int PWM_pin, bool pwm_mode, uint32_t divisor, uint32_t range)
     pwm_set_range(channel, range);
 }
 
+
+void pwm_set(){
+    int pin =18;
+    *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin]) | (FSEL_ALT0 << GPIO_SHIFT[pin])) ;
+
+    if ( clk == MAP_FAILED || pwm == MAP_FAILED)
+        return;
+
+    *(clk + CLK_CNTL) = CLK_PASSWRD | 0x01;           // Enable clock oscillator
+
+    while (*(clk + CLK_CNTL) & 0x80 != 0);            // Wait for reset
+
+    *(clk + CLK_DIV) = CLK_PASSWRD | 1 << 12;   // Set divisor
+
+    *(clk + CLK_CNTL) = CLK_PASSWRD | 0x11;           // Enable the clock generator
+
+    uint32_t ctl;
+    ctl |= 0x80;
+    ctl |= 0x01;
+
+    *(pwm + PWM_CTL) = ctl;
+    *(pwm + 4) = 1024;
+}
+
 void pwm_write(int PWM_pin, uint32_t data)
 {
     if (clk == MAP_FAILED || pwm == MAP_FAILED)

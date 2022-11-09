@@ -37,21 +37,18 @@ int main (void)
   if (wiringPiSetup () == -1)
     exit (1) ;
 
-  pinMode (1, PWM_OUTPUT) ;
+  pinMode (18, PWM_OUTPUT) ;
 
+  pwmSetMode(PWM_MODE_MS);
+  pwmSetClock(19);
+  pwmSetRange(1024);
+
+  
+  pwmWrite (18, 512) ;
   for (;;)
   {
-    for (bright = 0 ; bright < 1024 ; ++bright)
-    {
-      pwmWrite (1, bright) ;
-      delay (1) ;
-    }
 
-    for (bright = 1023 ; bright >= 0 ; --bright)
-    {
-      pwmWrite (1, bright) ;
-      delay (1) ;
-    }
+      
   }
 
   return 0 ;

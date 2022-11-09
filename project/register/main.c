@@ -16,8 +16,8 @@
 int main()
 {
     lib_init();
-    pwm_setup(PIN, PWM_ENABLE, 1, 1024);
-    pwm_write(PIN, 512);
+    pwm_set();
+    pwm_write(18, 512);
     while(1)
     {  
         

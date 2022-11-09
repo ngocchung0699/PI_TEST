@@ -158,7 +158,7 @@ void pwm_set_mode(bool channel, bool pwm_mode);
 void pwm_set_range(bool channel, uint32_t range);
 
 void pwm_setup(int PWM_pin, bool pwm_mode,uint32_t divisor, uint32_t range);
-
+void pwm_set();
 void pwm_write(int PWM_pin, uint32_t data);
 
 //---------IRQ---------//
