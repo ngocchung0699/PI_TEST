@@ -10,22 +10,17 @@
 #include <stdbool.h>
 #include "lib.h"
 
-#define PIN 26
+#define PIN 18
 
-int i=0;
-void iqr(){
-    i++;
-    
-}
 
 int main()
 {
     lib_init();
-    iqr_setup(PIN, HIGH, iqr);
+    pwm_setup(PIN, PWM_ENABLE, 1, 1024);
+    pwm_write(PIN, 512);
     while(1)
     {  
-        printf("value: %d", i);
-        delay_ms(100);
+        
     }  
     lib_close();
     return 0;

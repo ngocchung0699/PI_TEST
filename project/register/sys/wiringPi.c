@@ -1860,7 +1860,6 @@ unsigned int digitalReadByte (void)
   return data ;
 }
 
-
 /*
  * digitalWriteByte2:
  * digitalReadByte2:

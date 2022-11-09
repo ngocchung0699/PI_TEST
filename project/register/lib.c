@@ -14,9 +14,12 @@
 
 static volatile uint32_t *timer ;
 static volatile uint32_t *gpio ;
+static volatile uint32_t *clk ;
+static volatile uint32_t *pwm ;
 
 static volatile int    pinPass = -1 ;
 static void (*isrFunctions [64])(void) ;
+
 
 // gpio_GPFSEL:
 //	Map a BCM_GPIO pin to it's Function Selection
@@ -120,7 +123,6 @@ static uint8_t GPIO_GPFSEL_PUD [] =
     GPIO_PUP_PDN_CNTRL_REG3, GPIO_PUP_PDN_CNTRL_REG3, GPIO_PUP_PDN_CNTRL_REG3, GPIO_PUP_PDN_CNTRL_REG3
 } ;
 
-
 static pthread_mutex_t pinMutex ;
 
 
@@ -141,6 +143,8 @@ void lib_init(){
         
     gpio = base + GPIO_REG;
     timer = base + TIMER_REG;
+    clk = base + CLK_REG;
+    pwm = base + PWM0_REG;
     close(memfd);
 }
 
@@ -149,6 +153,10 @@ void lib_close(){
     gpio = MAP_FAILED;
     timer = MAP_FAILED;
 }
+
+ 
+//---------GPIO----------//
+
 
 void pinMode(int pin, int mode){
     if(mode == INPUT){
@@ -258,7 +266,103 @@ unsigned long micros(){
     return sys_timer_read();
 }
 
+//----------PWM----------//
 
+void pwm_set_clock(uint32_t divisor)
+{
+    if ( clk == MAP_FAILED || pwm == MAP_FAILED)
+        return;
+    divisor &= 0xfff;
+
+    *(clk + CLK_CNTL) = CLK_PASSWRD | 0x01;           // Enable clock oscillator
+
+    while (*(clk + CLK_CNTL) & 0x80 != 0);            // Wait for reset
+
+    *(clk + CLK_DIV) = CLK_PASSWRD | divisor << 12;   // Set divisor
+
+    *(clk + CLK_CNTL) = CLK_PASSWRD | 0x11;           // Enable the clock generator
+}
+
+void pwm_set_mode(bool channel, bool pwm_mode)
+{
+    if (clk == MAP_FAILED || pwm == MAP_FAILED)
+        return;
+
+    if(channel){
+        *(pwm + PWM_CTL) = 1<<15 | pwm_mode<<8;
+    }
+    else{
+        *(pwm + PWM_CTL) = 1<<7 | pwm_mode;
+    }
+}
+
+void pwm_set_range(bool channel, uint32_t range)
+{
+    if (clk == MAP_FAILED || pwm == MAP_FAILED)
+        return;
+
+    if(channel){
+        *(pwm + PWM_RNG2) = range;
+    }
+    else{
+        *(pwm + PWM_RNG1) = range;
+    }
+}
+
+void pwm_setup(int PWM_pin, bool pwm_mode, uint32_t divisor, uint32_t range)
+{
+    int pin;
+    bool channel;
+    if(PWM_pin == PWM0){ 
+        pin = PWM_pin;
+        channel = 0;
+        *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin]) | (FSEL_ALT0 << GPIO_SHIFT[pin])) ;
+    }
+    else if(PWM_pin == PWM1){ 
+        pin = PWM_pin;
+        channel = 1;
+        *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin]) | (FSEL_ALT0 << GPIO_SHIFT[pin])) ;
+    }
+    else if(PWM_pin == PWM2){ 
+        pin = PWM_pin;
+        channel = 0;
+        *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin]) | (FSEL_ALT5 << GPIO_SHIFT[pin])) ;
+    }
+    else if(PWM_pin == PWM3){ 
+        pin = PWM_pin;
+        channel = 1;
+        *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin]) | (FSEL_ALT5 << GPIO_SHIFT[pin])) ;
+    }
+
+    pwm_set_mode(channel, pwm_mode);
+
+    pwm_set_clock(divisor);
+
+    pwm_set_range(channel, range);
+}
+
+void pwm_write(int PWM_pin, uint32_t data)
+{
+    if (clk == MAP_FAILED || pwm == MAP_FAILED)
+        return;
+
+    if(PWM_pin == PWM0){ 
+        *(pwm + PWM_DAT1) = data;
+    }
+    else if(PWM_pin == PWM1){    
+        *(pwm + PWM_DAT2) = data;
+    }
+    else if(PWM_pin == PWM2){ 
+        *(pwm + PWM_DAT1) = data;
+    }
+    else if(PWM_pin == PWM3){ 
+        *(pwm + PWM_DAT2) = data;
+    }
+}
+
+
+
+/*
 
 static void gpio_rising_enable(int pin){
     *(gpio + GPREN0) = 1 << pin;
@@ -319,7 +423,7 @@ static void *iqr_handler (void *arg)
 
 
 
-void iqr_init(int pin, int mode, void (*function)(void)){
+void iqr_setup(int pin, int mode, void (*function)(void)){
     pthread_t threadId ;
 
     if(mode == RISING){
@@ -340,13 +444,28 @@ void iqr_init(int pin, int mode, void (*function)(void)){
 
     isrFunctions [pin] = function ;
     
-
-    pthread_mutex_lock (&pinMutex) ;
+    //pthread_mutex_lock (&pinMutex) ;
     pinPass = pin;
     pthread_create (&threadId, NULL, iqr_handler, NULL) ;
-    pthread_mutex_unlock (&pinMutex) ;
+    //pthread_mutex_unlock (&pinMutex) ;
 }
 
 void iqr_close(int pin, int mode){
-
+    if(mode == RISING){
+        gpio_rising_disable(pin);
+    }
+    else if(mode == FALLING){
+        gpio_falling_disable(pin);
+    }
+    else if(mode == HIGH){
+        gpio_high_disable(pin);
+    }
+    else if(mode == LOW){
+        gpio_low_disable(pin);
+    }
+    else{
+        printf("Select close interrupt mode false");
+    }
 }
+
+*/

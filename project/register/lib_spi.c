@@ -33,10 +33,6 @@
 #include <asm/ioctl.h>
 #include <linux/spi/spidev.h>
 
-#include "wiringPi.h"
-
-#include "wiringPiSPI.h"
-
 
 // The SPI bus parameters
 //	Variables as they need to be passed as pointers later on

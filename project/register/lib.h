@@ -116,15 +116,56 @@ unsigned long micros(void);
 
 uint32_t peri_read(volatile uint32_t* paddr);
 
-//---------PWM---------//
+//---------CLOCK---------//
 
+#define CLK_REG                     (0x101000/4)
+#define CLK_CNTL                    40
+#define CLK_DIV                     41
+#define CLK_PASSWRD                 (0x5A << 24)  //Password to enable setting PWM clock 
 
+//---------PWM----------//
+
+#define PWM0_REG                    (0x20c000/4)
+#define PWM1_REG                    (0x20c800/4)   // do not use
+#define PWM_CTL                     (0x00/4)
+#define PWM_STA                     (0x04/4)
+#define PWM_DMAC                    (0x08/4)
+#define PWM_RNG1                    (0x10/4)
+#define PWM_DAT1                    (0x14/4)
+#define PWM_FIF1                    (0x18/4)
+#define PWM_RNG2                    (0x20/4)
+#define PWM_DAT2                    (0x24/4)
+
+#define PWM0                        12             // GPIO 12 (PWM0_0)
+#define PWM1                        13             // GPIO 13 (PWM0_1)
+#define PWM2                        18             // GPIO 18 (PWM0_0)
+#define PWM3                        19             // GPIO 19 (PWM0_1)
+
+typedef enum
+{
+    PWM_ENABLE,
+    PWM_DISABLE
+}PWM_MODE;
+
+typedef enum
+{
+    PWM_CH0,
+    PWM_CH1
+}PWM_CHANEL;
+
+void pwm_set_clock(uint32_t divisor);
+void pwm_set_mode(bool channel, bool pwm_mode);
+void pwm_set_range(bool channel, uint32_t range);
+
+void pwm_setup(int PWM_pin, bool pwm_mode,uint32_t divisor, uint32_t range);
+
+void pwm_write(int PWM_pin, uint32_t data);
 
 //---------IRQ---------//
-
+/*
 void iqr_setup(int pin, int mode, void (*function)(void));
 void iqr_close(int pin, int mode);
-
+*/
 
 #endif
 
