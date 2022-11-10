@@ -125,7 +125,52 @@ static uint8_t GPIO_GPFSEL_PUD [] =
 
 static pthread_mutex_t pinMutex ;
 
+uint32_t lib_peri_read(volatile uint32_t* paddr)
+{
+    uint32_t ret;
+    __sync_synchronize();
+    ret = *paddr;
+    __sync_synchronize();
+    return ret;
 
+}
+
+/* read from peripheral without the read barrier
+ * This can only be used if more reads to THE SAME peripheral
+ * will follow.  The sequence must terminate with memory barrier
+ * before any read or write to another peripheral can occur.
+ * The MB can be explicit, or one of the barrier read/write calls.
+ */
+uint32_t peri_read_nb(volatile uint32_t* paddr)
+{
+	return *paddr;
+}
+
+/* Write with memory barriers to peripheral
+ */
+
+void lib_peri_write(volatile uint32_t* paddr, uint32_t value)
+{
+        __sync_synchronize();
+        *paddr = value;
+        __sync_synchronize();
+}
+
+/* write to peripheral without the write barrier */
+void lib_peri_write_nb(volatile uint32_t* paddr, uint32_t value)
+{
+	*paddr = value;
+}
+
+/* Set/clear only the bits in value covered by the mask
+ * This is not atomic - can be interrupted.
+ */
+void lib_peri_set_bits(volatile uint32_t* paddr, uint32_t value, uint32_t mask)
+{
+    uint32_t v = bcm2835_peri_read(paddr);
+    v = (v & ~mask) | (value & mask);
+    bcm2835_peri_write(paddr, v);
+}
 
 
 void lib_init(){
@@ -153,6 +198,7 @@ void lib_close(){
     gpio = MAP_FAILED;
     timer = MAP_FAILED;
 }
+
 
  
 //---------GPIO----------//
@@ -386,49 +432,113 @@ void pwm_write(int PWM_pin, uint32_t data)
     }
 }
 
+void gpio_set_pud(uint8_t pin, uint8_t pud)
+{
+
+        int shiftbits = (pin & 0xf) << 1;
+        uint32_t bits;
+        uint32_t pull;
+        
+        switch (pud)
+        {
+           case NO_PULL:  pull = 0; break;
+           case INPUT_PULLUP:   pull = 1; break;
+           case INPUT_PULLDOWN: pull = 2; break;
+           default: return;
+        }
+                
+        volatile uint32_t* paddr = gpio + 0xe4/4 + (pin >> 4);
+        
+        bits = bcm2835_peri_read_nb( paddr );
+        bits &= ~(3 << shiftbits);
+        bits |= (pull << shiftbits);
+        
+        lib_peri_write_nb( paddr, bits );
+}
 
 void gpio_rising_enable(int pin){
-    *(gpio + GPREN0) = (*(gpio + GPREN0) & ~(1 << pin) | (1 << pin));
+    //*(gpio + GPREN0) = (*(gpio + GPREN0) & ~(1 << pin) | (1 << pin));
+    volatile uint32_t* paddr = gpio + GPREN0;
+    uint8_t shift = pin % 32;
+    uint32_t value = 1 << shift;
+    lib_peri_set_bits(paddr, value, value);
 }
 void gpio_rising_disable(int pin){
-    *(gpio + GPREN0) = (*(gpio + GPREN0) & ~(1 << pin) | (0 << pin));
+    //*(gpio + GPREN0) = (*(gpio + GPREN0) & ~(1 << pin) | (0 << pin));
+    volatile uint32_t* paddr = gpio + GPREN0;
+    uint8_t shift = pin % 32;
+    uint32_t value = 1 << shift;
+    lib_peri_set_bits(paddr, 0, value);
 }
 
 void gpio_falling_enable(int pin){
-    *(gpio + GPFEN0) = (*(gpio + GPFEN0) & ~(1 << pin) | (1 << pin));
+    //*(gpio + GPFEN0) = (*(gpio + GPFEN0) & ~(1 << pin) | (1 << pin));
+    volatile uint32_t* paddr = gpio + GPFEN0;
+    uint8_t shift = pin % 32;
+    uint32_t value = 1 << shift;
+    lib_peri_set_bits(paddr, value, value);
 }
 void gpio_falling_disable(int pin){
-    *(gpio + GPFEN0) = (*(gpio + GPFEN0) & ~(1 << pin) | (0 << pin));
+    //*(gpio + GPFEN0) = (*(gpio + GPFEN0) & ~(1 << pin) | (0 << pin));
+    volatile uint32_t* paddr = gpio + GPFEN0;
+    uint8_t shift = pin % 32;
+    uint32_t value = 1 << shift;
+    lib_peri_set_bits(paddr, 0, value);
 }
 
 void gpio_high_enable(int pin){
-    *(gpio + GPHEN0) = (*(gpio + GPHEN0) & ~(1 << pin) | (1 << pin));
+    //*(gpio + GPHEN0) = (*(gpio + GPHEN0) & ~(1 << pin) | (1 << pin));
+    volatile uint32_t* paddr = gpio + GPHEN0;
+    uint8_t shift = pin % 32;
+    uint32_t value = 1 << shift;
+    lib_peri_set_bits(paddr, value, value);
 }
 void gpio_high_disable(int pin){
-    *(gpio + GPHEN0) = (*(gpio + GPHEN0) & ~(1 << pin) | (0 << pin));
+    //*(gpio + GPHEN0) = (*(gpio + GPHEN0) & ~(1 << pin) | (0 << pin));
+    volatile uint32_t* paddr = gpio + GPHEN0;
+    uint8_t shift = pin % 32;
+    uint32_t value = 1 << shift;
+    lib_peri_set_bits(paddr, 0, value);
 }
 
 void gpio_low_enable(int pin){
-    *(gpio + GPLEN0) = (*(gpio + GPLEN0) & ~(1 << pin) | (1 << pin));
+    //*(gpio + GPLEN0) = (*(gpio + GPLEN0) & ~(1 << pin) | (1 << pin));
+    volatile uint32_t* paddr = gpio + GPLEN0;
+    uint8_t shift = pin % 32;
+    uint32_t value = 1 << shift;
+    lib_peri_set_bits(paddr, value, value);
 }
 void gpio_low_disable(int pin){
-    *(gpio + GPLEN0) = (*(gpio + GPLEN0) & ~(1 << pin) | (0 << pin));
+    //*(gpio + GPLEN0) = (*(gpio + GPLEN0) & ~(1 << pin) | (0 << pin));
+    volatile uint32_t* paddr = gpio + GPLEN0;
+    uint8_t shift = pin % 32;
+    uint32_t value = 1 << shift;
+    lib_peri_set_bits(paddr, 0, value);
 }
 
 
 bool gpio_eds_flag(int pin)
 {
-    if((*(gpio + GPEDS0) & (1 << (pin & 31))) != 0){
-        return HIGH;
-    }
-    else{
-        return LOW;
-    }
+    // if((*(gpio + GPEDS0) & (1 << (pin & 31))) != 0){
+    //     return HIGH;
+    // }
+    // else{
+    //     return LOW;
+    // }
+
+    volatile uint32_t* paddr = gpio + GPEDS0;
+    uint8_t shift = pin % 32;
+    uint32_t value = lib_peri_read(paddr);
+    return (value & (1 << shift)) ? HIGH : LOW;
 }
 
 void gpio_eds_clear_flag(int pin)
 {
-    *(gpio + GPEDS0) = (*(gpio + GPEDS0) | (1 << (pin & 31)));
+    //*(gpio + GPEDS0) = (*(gpio + GPEDS0) | (1 << (pin & 31)));
+    volatile uint32_t* paddr = gpio + GPEDS0;
+    uint8_t shift = pin % 32;
+    uint32_t value = 1 << shift;
+    lib_peri_write(paddr, value);
 }
 
 void *iqr_handler (void *arg)
@@ -443,7 +553,6 @@ void *iqr_handler (void *arg)
 
     return NULL ;
 }
-
 
 
 void iqr_setup(int pin, int mode, void (*function)(void)){

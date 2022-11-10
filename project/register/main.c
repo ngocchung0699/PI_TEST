@@ -17,6 +17,7 @@ int main()
 {
     lib_init();
     pinMode(PIN, INPUT_PULLUP);
+    gpio_set_pud(PIN, INPUT_PULLUP);
     gpio_rising_enable(PIN);
     while(1)
     {  
