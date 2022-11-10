@@ -386,33 +386,32 @@ void pwm_write(int PWM_pin, uint32_t data)
     }
 }
 
-
 void gpio_rising_enable(int pin){
-    *(gpio + GPREN0) = 1 << pin;
+    *(gpio + GPREN0) = (*(gpio + GPREN0) | 1 << pin);
 }
 void gpio_rising_disable(int pin){
-    *(gpio + GPREN0) = 0 << pin;
+    *(gpio + GPREN0) = (*(gpio + GPREN0) | 0 << pin);
 }
 
 void gpio_falling_enable(int pin){
-    *(gpio + GPFEN0) = 1 << pin;
+    *(gpio + GPFEN0) = (*(gpio + GPFEN0) | 1 << pin);
 }
 void gpio_falling_disable(int pin){
-    *(gpio + GPFEN0) = 0 << pin;
+    *(gpio + GPFEN0) = (*(gpio + GPFEN0) | 0 << pin);
 }
 
 void gpio_high_enable(int pin){
-    *(gpio + GPHEN0) = 1 << pin;
+    *(gpio + GPHEN0) = (*(gpio + GPHEN0) | 1 << pin);
 }
 void gpio_high_disable(int pin){
-    *(gpio + GPHEN0) = 0 << pin;
+    *(gpio + GPHEN0) = (*(gpio + GPHEN0) | 0 << pin);
 }
 
 void gpio_low_enable(int pin){
-    *(gpio + GPLEN0) = 1 << pin;
+    *(gpio + GPLEN0) = (*(gpio + GPLEN0) | 1 << pin);
 }
 void gpio_low_disable(int pin){
-    *(gpio + GPLEN0) = 0 << pin;
+    *(gpio + GPLEN0) = (*(gpio + GPLEN0) | 0 << pin);
 }
 
 
@@ -428,7 +427,7 @@ bool gpio_eds_flag(int pin)
 
 void gpio_eds_clear_flag(int pin)
 {
-    *(gpio + GPEDS0) & (1 << (pin & 31));
+    *(gpio + GPEDS0) = (*(gpio + GPEDS0) | (1 << (pin & 31)));
 }
 
 void *iqr_handler (void *arg)
