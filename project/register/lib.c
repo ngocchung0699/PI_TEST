@@ -266,6 +266,8 @@ unsigned long micros(){
     return sys_timer_read();
 }
 
+
+
 //----------PWM----------//
 
 void pwm_set_clock(uint32_t divisor)
@@ -385,39 +387,36 @@ void pwm_write(int PWM_pin, uint32_t data)
 }
 
 
-
-/*
-
-static void gpio_rising_enable(int pin){
+void gpio_rising_enable(int pin){
     *(gpio + GPREN0) = 1 << pin;
 }
-static void gpio_rising_disable(int pin){
+void gpio_rising_disable(int pin){
     *(gpio + GPREN0) = 0 << pin;
 }
 
-static void gpio_falling_enable(int pin){
+void gpio_falling_enable(int pin){
     *(gpio + GPFEN0) = 1 << pin;
 }
-static void gpio_falling_disable(int pin){
+void gpio_falling_disable(int pin){
     *(gpio + GPFEN0) = 0 << pin;
 }
 
-static void gpio_high_enable(int pin){
+void gpio_high_enable(int pin){
     *(gpio + GPHEN0) = 1 << pin;
 }
-static void gpio_high_disable(int pin){
+void gpio_high_disable(int pin){
     *(gpio + GPHEN0) = 0 << pin;
 }
 
-static void gpio_low_enable(int pin){
+void gpio_low_enable(int pin){
     *(gpio + GPLEN0) = 1 << pin;
 }
-static void gpio_low_disable(int pin){
+void gpio_low_disable(int pin){
     *(gpio + GPLEN0) = 0 << pin;
 }
 
 
-static bool gpio_eds_flag(int pin)
+bool gpio_eds_flag(int pin)
 {
     if((*(gpio + GPEDS0) & (1 << (pin & 31))) != 0){
         return HIGH;
@@ -427,12 +426,12 @@ static bool gpio_eds_flag(int pin)
     }
 }
 
-static void gpio_eds_clear_flag(int pin)
+void gpio_eds_clear_flag(int pin)
 {
     *(gpio + GPEDS0) & (1 << (pin & 31));
 }
 
-static void *iqr_handler (void *arg)
+void *iqr_handler (void *arg)
 {
     int pin = pinPass;
     for (;;){
@@ -491,5 +490,3 @@ void iqr_close(int pin, int mode){
         printf("Select close interrupt mode false");
     }
 }
-
-*/

@@ -167,5 +167,23 @@ void iqr_setup(int pin, int mode, void (*function)(void));
 void iqr_close(int pin, int mode);
 */
 
+void gpio_rising_enable(int pin);
+void gpio_rising_disable(int pin);
+
+void gpio_falling_enable(int pin);
+void gpio_falling_disable(int pin);
+
+void gpio_high_enable(int pin);
+void gpio_high_disable(int pin);
+
+void gpio_low_enable(int pin);
+void gpio_low_disable(int pin);
+
+
+bool gpio_eds_flag(int pin);
+
+void gpio_eds_clear_flag(int pin);
+
+
 #endif
 
