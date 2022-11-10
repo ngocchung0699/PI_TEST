@@ -167,9 +167,9 @@ void lib_peri_write_nb(volatile uint32_t* paddr, uint32_t value)
  */
 void lib_peri_set_bits(volatile uint32_t* paddr, uint32_t value, uint32_t mask)
 {
-    uint32_t v = bcm2835_peri_read(paddr);
+    uint32_t v = lib_peri_read(paddr);
     v = (v & ~mask) | (value & mask);
-    bcm2835_peri_write(paddr, v);
+    lib_peri_write(paddr, v);
 }
 
 
@@ -449,7 +449,7 @@ void gpio_set_pud(uint8_t pin, uint8_t pud)
                 
         volatile uint32_t* paddr = gpio + 0xe4/4 + (pin >> 4);
         
-        bits = bcm2835_peri_read_nb( paddr );
+        bits = lib_peri_read_nb( paddr );
         bits &= ~(3 << shiftbits);
         bits |= (pull << shiftbits);
         

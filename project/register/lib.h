@@ -167,6 +167,8 @@ void iqr_setup(int pin, int mode, void (*function)(void));
 void iqr_close(int pin, int mode);
 */
 
+void gpio_set_pud(uint8_t pin, uint8_t pud);
+
 void gpio_rising_enable(int pin);
 void gpio_rising_disable(int pin);
 
