@@ -32,7 +32,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "lib_uart.h"
+#include "wiringSerial.h"
 
 /*
  * serialOpen:
