@@ -12,10 +12,22 @@
 #include "lib.h"
 #include "lib_uart.h"
 
-int main() {
+uint8_t var[10];
 
+int main() {
+	int fd = serial_open ("/dev/serial0", 9600);
 	while(1) {
-		serial_send_char(0, 9600, 0x41);
+		int i;
+		while (serial_data_avail(fd) > 0 )
+		{
+			int c = serial_get_char(fd);
+			var[i++] = c;
+			if(var[i-1] == 0x0A && var[i] == 0x0D){
+				break;
+			}
+		}
+		printf("receive: %s", var);
+		
 	}
 	return 0;
 }

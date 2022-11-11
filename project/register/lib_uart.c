@@ -107,38 +107,18 @@ void serial_close (const int fd)
   close (fd) ;
 }
 
-static int serial_select(const int serial_port, unsigned long baud_rate){
-  int fd;
-  if(serial_port == 0){
-    fd = serial_open ("/dev/serial0", baud_rate);
-  }
-  else if(serial_port == 1){
-    fd = serial_open ("/dev/serial1", baud_rate);
-  }
-  return fd;
-}
-
-void serial_send_char (const int serial_port, unsigned long baud_rate, const unsigned char c)
+void serial_send_char (const int serial_port, const unsigned char c)
 {
-  int fd = serial_select(serial_port, baud_rate);
-
-  write (fd, &c, 1) ;
-
-  serial_close(fd);
+  write (serial_port, &c, 1) ;
 }
 
 
-void serial_send_string (const int serial_port, unsigned long baud_rate, const char *s)
+void serial_send_string (const int serial_port, const char *s)
 {
-  int fd = serial_select(serial_port, baud_rate);
-
-  write (fd, s, strlen (s)) ;
-
-  serial_close(fd);
+  write (serial_port, s, strlen (s)) ;
 }
 
-
-void serial_send (const int fd, const char *message, ...)
+void serial_send (const int serial_port, const char *message)
 {
   va_list argp ;
   char buffer [1024] ;
@@ -147,29 +127,24 @@ void serial_send (const int fd, const char *message, ...)
     vsnprintf (buffer, 1023, message, argp) ;
   va_end (argp) ;
 
-  serialPuts (fd, buffer) ;
+  write (fd, buffer, strlen (buffer)) ;
 }
 
-
-int serial_data_avail (const int serial_port, unsigned long baud_rate)
+int serial_data_avail (const int serial_port)
 {
   int result ;
-  int fd = serial_select(serial_port, baud_rate);
 
-  if (ioctl (fd, FIONREAD, &result) == -1)
+  if (ioctl (serial_port, FIONREAD, &result) == -1)
     return -1 ;
-  serial_close(fd);
   return result ;
 }
 
-
-int serial_get_char (const int serial_port, unsigned long baud_rate)
+uint8_t serial_get_char (const int serial_port)
 {
-  uint8_t x ;
-  int fd = serial_select(serial_port, baud_rate);
+  uint8_t receive ;
 
-  if (read (fd, &x, 1) != 1)
+  if (read (serial_port, &receive, 1) != 1)
     return -1 ;
 
-  return ((int)x) & 0xFF ;
+  return ((int)receive) & 0xFF ;
 }
