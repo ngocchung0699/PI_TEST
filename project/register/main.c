@@ -14,19 +14,8 @@
 
 int main() {
 
-	int fd;
- 
-	printf("Raspberry's sending : \n");
-    if((fd = serialOpen ("/dev/serial0", 9600)) < 0 ){
-		fprintf (stderr, "Unable to open serial device: %s\n", strerror (errno));
-	}
 	while(1) {
-		
-		serialPuts(fd, "hello");
-		serialFlush(fd);
-		printf("%s\n", "hello");
-		fflush(stdout);
-		delay(1000);
+		serial_send_char(0, 9600, 0x41);
 	}
 	return 0;
 }

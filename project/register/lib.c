@@ -255,6 +255,28 @@ void delay_us(uint64_t micros)
     sys_timer_delay(start, micros);
 }
 
+void delay_sys_ms (unsigned int howLong)
+{
+  struct timespec sleeper, dummy ;
+
+  sleeper.tv_sec  = (time_t)(howLong / 1000) ;
+  sleeper.tv_nsec = (long)(howLong % 1000) * 1000000 ;
+
+  nanosleep (&sleeper, &dummy) ;
+}
+
+
+void delay_sys_us (unsigned int howLong)
+{
+  struct timespec sleeper, dummy ;
+
+  sleeper.tv_sec  = (time_t)(howLong / 1000000) ;
+  sleeper.tv_nsec = (long)(howLong % 1000000) * 1000 ;
+
+  nanosleep (&sleeper, &dummy) ;
+}
+
+
 /* Read the System Timer Counter (64-bits) */
 uint64_t sys_timer_read(void)
 {

@@ -21,11 +21,6 @@
 #define I2C_SMBUS	0x0720	/* SMBus-level access */
 
 
-
-
-
-
-
 //NB: Added by John Burns
 
 

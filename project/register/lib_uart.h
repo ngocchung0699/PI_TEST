@@ -1,17 +1,14 @@
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef	__LIB_UART_H__
+#define	__LIB_UART_H__
 
-extern int   serialOpen      (const char *device, const int baud) ;
-extern void  serialClose     (const int fd) ;
-extern void  serialFlush     (const int fd) ;
-extern void  serialPutchar   (const int fd, const unsigned char c) ;
-extern void  serialPuts      (const int fd, const char *s) ;
-extern void  serialPrintf    (const int fd, const char *message, ...) ;
-extern int   serialDataAvail (const int fd) ;
-extern int   serialGetchar   (const int fd) ;
+int   serial_open      (const char *device, unsigned long baud_rate) ;
+void  serial_close     (const int fd) ;
 
-#ifdef __cplusplus
-}
+void  serial_send_char   (const int serial_port, unsigned long baud_rate, const unsigned char c) ;
+void  serial_send_string      (const int serial_port, unsigned long baud_rate, const char *s) ;
+void  serial_send    (const int fd, const char *message, ...) ;
+int   serial_data_avail (const int serial_port, unsigned long baud_rate) ;
+int   serial_get_char   (const int serial_port, unsigned long baud_rate) ;
+
 #endif

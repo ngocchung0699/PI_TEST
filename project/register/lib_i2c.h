@@ -6,7 +6,6 @@
 
 #include <linux/types.h>
 #include <linux/i2c.h>
-#include <wiringPiI2C.h>
 
 
 extern __s32 i2c_smbus_write_quick(int file, __u8 value);

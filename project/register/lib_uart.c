@@ -1,24 +1,4 @@
-/*
- * wiringSerial.c:
- *	Handle a serial port
- ***********************************************************************
- * This file is part of wiringPi:
- *	https://github.com/WiringPi/WiringPi/
- *
- *    wiringPi is free software: you can redistribute it and/or modify
- *    it under the terms of the GNU Lesser General Public License as published by
- *    the Free Software Foundation, either version 3 of the License, or
- *    (at your option) any later version.
- *
- *    wiringPi is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU Lesser General Public License for more details.
- *
- *    You should have received a copy of the GNU Lesser General Public License
- *    along with wiringPi.  If not, see <http://www.gnu.org/licenses/>.
- ***********************************************************************
- */
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,13 +21,13 @@
  *********************************************************************************
  */
 
-int serialOpen (const char *device, const int baud)
+int serial_open (const char *device, unsigned long baud_rate)
 {
   struct termios options ;
   speed_t myBaud ;
   int     status, fd ;
 
-  switch (baud)
+  switch (baud_rate)
   {
     case      50:	myBaud =      B50 ; break ;
     case      75:	myBaud =      B75 ; break ;
@@ -117,66 +97,48 @@ int serialOpen (const char *device, const int baud)
 
   ioctl (fd, TIOCMSET, &status);
 
-  usleep (10000) ;	// 10mS
 
   return fd ;
 }
 
 
-/*
- * serialFlush:
- *	Flush the serial buffers (both tx & rx)
- *********************************************************************************
- */
-
-void serialFlush (const int fd)
-{
-  tcflush (fd, TCIOFLUSH) ;
-}
-
-
-/*
- * serialClose:
- *	Release the serial port
- *********************************************************************************
- */
-
-void serialClose (const int fd)
+void serial_close (const int fd)
 {
   close (fd) ;
 }
 
+static int serial_select(const int serial_port, unsigned long baud_rate){
+  int fd;
+  if(serial_port == 0){
+    fd = serial_open ("/dev/serial0", baud_rate);
+  }
+  else if(serial_port == 1){
+    fd = serial_open ("/dev/serial1", baud_rate);
+  }
+  return fd;
+}
 
-/*
- * serialPutchar:
- *	Send a single character to the serial port
- *********************************************************************************
- */
-
-void serialPutchar (const int fd, const unsigned char c)
+void serial_send_char (const int serial_port, unsigned long baud_rate, const unsigned char c)
 {
+  int fd = serial_select(serial_port, baud_rate);
+
   write (fd, &c, 1) ;
+
+  serial_close(fd);
 }
 
 
-/*
- * serialPuts:
- *	Send a string to the serial port
- *********************************************************************************
- */
-
-void serialPuts (const int fd, const char *s)
+void serial_send_string (const int serial_port, unsigned long baud_rate, const char *s)
 {
+  int fd = serial_select(serial_port, baud_rate);
+
   write (fd, s, strlen (s)) ;
+
+  serial_close(fd);
 }
 
-/*
- * serialPrintf:
- *	Printf over Serial
- *********************************************************************************
- */
 
-void serialPrintf (const int fd, const char *message, ...)
+void serial_send (const int fd, const char *message, ...)
 {
   va_list argp ;
   char buffer [1024] ;
@@ -189,34 +151,22 @@ void serialPrintf (const int fd, const char *message, ...)
 }
 
 
-/*
- * serialDataAvail:
- *	Return the number of bytes of data avalable to be read in the serial port
- *********************************************************************************
- */
-
-int serialDataAvail (const int fd)
+int serial_data_avail (const int serial_port, unsigned long baud_rate)
 {
   int result ;
+  int fd = serial_select(serial_port, baud_rate);
 
   if (ioctl (fd, FIONREAD, &result) == -1)
     return -1 ;
-
+  serial_close(fd);
   return result ;
 }
 
 
-/*
- * serialGetchar:
- *	Get a single character from the serial device.
- *	Note: Zero is a valid character and this function will time-out after
- *	10 seconds.
- *********************************************************************************
- */
-
-int serialGetchar (const int fd)
+int serial_get_char (const int serial_port, unsigned long baud_rate)
 {
   uint8_t x ;
+  int fd = serial_select(serial_port, baud_rate);
 
   if (read (fd, &x, 1) != 1)
     return -1 ;

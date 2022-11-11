@@ -19,8 +19,6 @@ void lib_close();
 
 //--------GPIO----------//
 
-
-
 #define GPIO_REG                    (0x200000/4)
 
 #define GPFSEL0                     (0x00/4)
@@ -106,6 +104,10 @@ bool digitalRead(int pin);
 #define TIMER_M1                    1
 #define TIMER_M2                    2
 #define TIMER_M3                    3
+
+void delay_sys_ms (unsigned int howLong);
+
+void delay_sys_us (unsigned int howLong);
 
 void delay_ms(uint64_t milis);
 void delay_us(uint64_t micros);
