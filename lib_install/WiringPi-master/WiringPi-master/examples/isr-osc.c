@@ -53,8 +53,7 @@
 // What GPIO input are we using?
 //	This is a wiringPi pin number
 
-#define	OUT_PIN		0
-#define	IN_PIN		1
+#define	IN_PIN		26
 
 // globalCounter:
 //	Global variable to count interrupts
@@ -69,9 +68,7 @@ static volatile int globalCounter = 0 ;
 
 void myInterrupt (void)
 {
-  digitalWrite (OUT_PIN, 1) ;
-  ++globalCounter ;
-  digitalWrite (OUT_PIN, 0) ;
+  printf("ON");
 }
 
 
@@ -86,13 +83,12 @@ int main (void)
   int myCounter   = 0 ;
   int lastCounter = 0 ;
 
-  if (wiringPiSetup () < 0)
+  if (wiringPiSetupGpio () < 0)
   {
     fprintf (stderr, "Unable to setup wiringPi: %s\n", strerror (errno)) ;
     return 1 ;
   }
 
-  pinMode (OUT_PIN, OUTPUT) ;
   pinMode (IN_PIN,  INPUT) ;
 
   if (wiringPiISR (IN_PIN, INT_EDGE_FALLING, &myInterrupt) < 0)
@@ -101,17 +97,9 @@ int main (void)
     return 1 ;
   }
 
-  for (;;)
+  while(1)
   {
-    printf ("Waiting ... ") ; fflush (stdout) ;
-
-    while (myCounter == globalCounter)
-      delay (1000) ;
-
-    printf (" Done. counter: %6d: %6d\n",
-		globalCounter, myCounter - lastCounter) ;
-    lastCounter = myCounter ;
-    myCounter   = globalCounter ;
+    printf("OFF");
   }
 
   return 0 ;

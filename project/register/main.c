@@ -11,24 +11,21 @@
 #include <pthread.h>
 #include "lib.h"
 
-#define PIN 26
+int main() {
 
-int main()
-{
-    lib_init();
-    pinMode(PIN, INPUT_PULLUP);
-    gpio_set_pud(PIN, INPUT_PULLUP);
-    gpio_rising_enable(PIN);
-    while(1)
-    {  
-        if(gpio_eds_flag(PIN) == 1){
-            gpio_eds_clear_flag(PIN);
-            printf("iqr on");
-        }
-        if(gpio_eds_flag(PIN) == 0){
-            printf("iqr off");
-        }
-    }  
-    lib_close();
-    return 0;
+	int fd;
+ 
+	printf("Raspberry's sending : \n");
+    if((fd = serialOpen ("/dev/serial0", 9600)) < 0 ){
+		fprintf (stderr, "Unable to open serial device: %s\n", strerror (errno));
+	}
+	while(1) {
+		
+		serialPuts(fd, "hello");
+		serialFlush(fd);
+		printf("%s\n", "hello");
+		fflush(stdout);
+		delay(1000);
+	}
+	return 0;
 }

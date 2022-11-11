@@ -2021,7 +2021,7 @@ int wiringPiISR (int pin, int mode, void (*function)(void))
 
   if (mode != INT_EDGE_SETUP)
   {
-    /**/ if (mode == INT_EDGE_FALLING)
+    if (mode == INT_EDGE_FALLING)
       modeS = "falling" ;
     else if (mode == INT_EDGE_RISING)
       modeS = "rising" ;
@@ -2035,18 +2035,18 @@ int wiringPiISR (int pin, int mode, void (*function)(void))
 
     if (pid == 0)	// Child, exec
     {
-      /**/ if (access ("/usr/local/bin/gpio", X_OK) == 0)
+      if (access ("/usr/local/bin/gpio", X_OK) == 0)
       {
-	execl ("/usr/local/bin/gpio", "gpio", "edge", pinS, modeS, (char *)NULL) ;
-	return wiringPiFailure (WPI_FATAL, "wiringPiISR: execl failed: %s\n", strerror (errno)) ;
+	      execl ("/usr/local/bin/gpio", "gpio", "edge", pinS, modeS, (char *)NULL) ;
+	      return wiringPiFailure (WPI_FATAL, "wiringPiISR: execl failed: %s\n", strerror (errno)) ;
       }
       else if (access ("/usr/bin/gpio", X_OK) == 0)
       {
-	execl ("/usr/bin/gpio", "gpio", "edge", pinS, modeS, (char *)NULL) ;
-	return wiringPiFailure (WPI_FATAL, "wiringPiISR: execl failed: %s\n", strerror (errno)) ;
+	      execl ("/usr/bin/gpio", "gpio", "edge", pinS, modeS, (char *)NULL) ;
+	      return wiringPiFailure (WPI_FATAL, "wiringPiISR: execl failed: %s\n", strerror (errno)) ;
       }
       else
-	return wiringPiFailure (WPI_FATAL, "wiringPiISR: Can't find gpio program\n") ;
+	    return wiringPiFailure (WPI_FATAL, "wiringPiISR: Can't find gpio program\n") ;
     }
     else		// Parent, wait
       waitpid (pid, NULL, 0) ;

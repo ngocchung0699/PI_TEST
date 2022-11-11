@@ -141,7 +141,7 @@ uint32_t lib_peri_read(volatile uint32_t* paddr)
  * before any read or write to another peripheral can occur.
  * The MB can be explicit, or one of the barrier read/write calls.
  */
-uint32_t peri_read_nb(volatile uint32_t* paddr)
+uint32_t lib_peri_read_nb(volatile uint32_t* paddr)
 {
 	return *paddr;
 }
@@ -244,7 +244,6 @@ void delay_ms(uint64_t milis)
 {
     delay_us(milis * 1000);
 }
-
 
 /* microseconds */
 void delay_us(uint64_t micros)
@@ -388,7 +387,6 @@ void pwm_setup(int PWM_pin, bool pwm_mode, uint32_t divisor, uint32_t range)
 
     pwm_set_range(channel, range);
 }
-
 
 void pwm_set(){
     int pin =18;

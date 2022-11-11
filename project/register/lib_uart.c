@@ -200,12 +200,12 @@ int serialDataAvail (const int fd)
  *********************************************************************************
  */
 
-int serialGetchar (const int fd)
+uint8_t serialGetchar (const int fd)
 {
   uint8_t x ;
 
   if (read (fd, &x, 1) != 1)
     return -1 ;
 
-  return ((int)x) & 0xFF ;
+  return (x & 0xFF) ;
 }
