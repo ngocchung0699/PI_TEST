@@ -1,11 +1,11 @@
 
 CC=gcc
-TARGET=main
-OBJ=dcfan.o	wiringPi.o
-DEPS=wiringPi.h
+TARGET=bin
+OBJ=main.o	lib.o
+DEPS=lib.h
 $(TARGET): $(OBJ)
 	$(CC)	-o	$@	$(OBJ)
-%.0: %.c	(DEPS)
+%.o: %.c	(DEPS)
 	$(CC)	-c	$<
 clean: 
 	rm	-f	$(TARGET)	$(OBJ)
