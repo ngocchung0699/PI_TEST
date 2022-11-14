@@ -118,7 +118,7 @@ void serial_send_string (const int serial_port, const char *s)
   write (serial_port, s, strlen (s)) ;
 }
 
-void serial_send (const int serial_port, const char *message)
+void serial_send (const int serial_port, const char *message, ...)
 {
   va_list argp ;
   char buffer [1024] ;
@@ -127,7 +127,7 @@ void serial_send (const int serial_port, const char *message)
     vsnprintf (buffer, 1023, message, argp) ;
   va_end (argp) ;
 
-  write (fd, buffer, strlen (buffer)) ;
+  write (serial_port, buffer, strlen (buffer)) ;
 }
 
 int serial_data_avail (const int serial_port)
@@ -146,5 +146,5 @@ uint8_t serial_get_char (const int serial_port)
   if (read (serial_port, &receive, 1) != 1)
     return -1 ;
 
-  return ((int)receive) & 0xFF ;
+  return receive & 0xFF ;
 }

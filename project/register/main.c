@@ -14,20 +14,19 @@
 
 uint8_t var[10];
 
+#define PIN 26
+
 int main() {
-	int fd = serial_open ("/dev/serial0", 9600);
-	while(1) {
-		int i;
-		while (serial_data_avail(fd) > 0 )
-		{
-			int c = serial_get_char(fd);
-			var[i++] = c;
-			if(var[i-1] == 0x0A && var[i] == 0x0D){
-				break;
-			}
+	lib_init();
+	pinMode(PIN, INPUT_PULLUP);
+	gpio_rising_enable(PIN);
+	while (1)
+	{
+		if(gpio_eds_flag(PIN) ==1){
+			gpio_eds_clear_flag(PIN);
+			printf("ON");
 		}
-		printf("receive: %s", var);
-		
 	}
+	
 	return 0;
 }
