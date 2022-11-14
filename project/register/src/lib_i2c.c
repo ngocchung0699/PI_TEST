@@ -9,7 +9,6 @@
 #include <linux/i2c-dev.h>
 #include <fcntl.h>
 #include <stdint.h>
-#include <wiringPiI2C.h>
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -87,7 +87,7 @@ int wiringPiSPISetupMode (int channel, int speed, int mode)
   snprintf (spiDev, 31, "/dev/spidev0.%d", channel) ;
 
   if ((fd = open (spiDev, O_RDWR)) < 0)
-    return wiringPiFailure (WPI_ALMOST, "Unable to open SPI device: %s\n", strerror (errno)) ;
+    return printf ("Unable to open SPI device: %s\n", strerror (errno)) ;
 
   spiSpeeds [channel] = speed ;
   spiFds    [channel] = fd ;
@@ -95,13 +95,13 @@ int wiringPiSPISetupMode (int channel, int speed, int mode)
 // Set SPI parameters.
 
   if (ioctl (fd, SPI_IOC_WR_MODE, &mode)            < 0)
-    return wiringPiFailure (WPI_ALMOST, "SPI Mode Change failure: %s\n", strerror (errno)) ;
+    return printf ("SPI Mode Change failure: %s\n", strerror (errno)) ;
   
   if (ioctl (fd, SPI_IOC_WR_BITS_PER_WORD, &spiBPW) < 0)
-    return wiringPiFailure (WPI_ALMOST, "SPI BPW Change failure: %s\n", strerror (errno)) ;
+    return printf ("SPI BPW Change failure: %s\n", strerror (errno)) ;
 
   if (ioctl (fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed)   < 0)
-    return wiringPiFailure (WPI_ALMOST, "SPI Speed Change failure: %s\n", strerror (errno)) ;
+    return printf ("SPI Speed Change failure: %s\n", strerror (errno)) ;
 
   return fd ;
 }
