@@ -9,19 +9,16 @@
 #include <stdint.h>
 #include "lib.h"
 
-#define PIN 26
 
 int main() 
 {   
     lib_init();
-    pinMode(PIN, OUTPUT);
+    uart_setup(0, 9600);
     
     while (1)
     {
-        digitalWrite(PIN, HIGH);
-        delay_ms(500);
-        digitalWrite(PIN, LOW);
-        delay_ms(500);
+        uart_putc(0x41);
+        delay_us(100);
     }
     lib_close();
     return (EXIT_SUCCESS);

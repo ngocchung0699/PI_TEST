@@ -2,6 +2,9 @@
     "files.associations": {
         "pthread.h": "c",
         "time.h": "c",
-        "lib_uart.h": "c"
+        "lib_uart.h": "c",
+        "stdint.h": "c",
+        "unistd.h": "c",
+        "fcntl.h": "c"
     }
 }

@@ -18,7 +18,7 @@ DEPFILES=$(patsubst %.c,%.d,$(CFILES))
 all: $(BINARY)
 
 $(BINARY): $(OBJECTS)
-	$(CC) -o $@ $^ -lwiringPi
+	$(CC) -o $@ $^ -lpthread
 
 # only want the .c file dependency here, thus $< instead of $^.
 #

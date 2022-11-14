@@ -16,18 +16,28 @@
 
 #define BASE_ADR                    0xfe000000
 
-static volatile uint32_t* base;
-
-
 void lib_init();
+void lib_close();
 
 //--------GPIO----------//
+typedef enum
+{
+    INPUT           = 0x00,
+    OUTPUT          = 0x01
+} GPIO_MODE;
 
-#define INPUT 0
-#define OUTPUT 1
+typedef enum
+{
+    NO_PULL         = 0x00,   /*!< Off ? disable pull-up/down 0b00 */
+    INPUT_PULLUP    = 0x01,   /*!< Enable Pull Down control 0b01 */
+    INPUT_PULLDOWN  = 0x02    /*!< Enable Pull Up control 0b10  */
+} GPIO_PU_PD_CONTROL;
 
-#define LOW 0
-#define HIGH 1
+typedef enum
+{
+    LOW,
+    HIGH
+} GPIO_STATUS;
 
 #define GPIO_REG                    (0x200000/4)
 
@@ -72,6 +82,9 @@ void lib_init();
 #define	FSEL_ALT5		            0b010
 
 void pinMode(int pin, int mode);
+void nopull_mode(int pin);
+void pullup_mode(int pin);
+void pulldown_mode(int pin);
 void digitalWrite(int pin, int value);
 bool digitalRead(int pin);
 
@@ -99,9 +112,80 @@ uint64_t sys_timer_read(void);
 void sys_timer_delay(uint64_t offset_micros, uint64_t micros);
 uint32_t peri_read(volatile uint32_t* paddr);
 
-//---------PWM---------//
+//---------PWM----------//
+
+//---------CLOCK---------//
+
+#define CLK_REG                     (0x101000/4)
+#define CLK_CNTL                    40
+#define CLK_DIV                     41
+#define CLK_PASSWRD                 (0x5A << 24)  //Password to enable setting PWM clock 
+
+//---------PWM----------//
+
+#define PWM0_REG                    (0x20c000/4)
+#define PWM1_REG                    (0x20c800/4)   // do not use
+#define PWM_CTL                     (0x00/4)
+#define PWM_STA                     (0x04/4)
+#define PWM_DMAC                    (0x08/4)
+#define PWM_RNG1                    (0x10/4)
+#define PWM_DAT1                    (0x14/4)
+#define PWM_FIF1                    (0x18/4)
+#define PWM_RNG2                    (0x20/4)
+#define PWM_DAT2                    (0x24/4)
+
+#define PWM0                        12             // GPIO 12 (PWM0_0)
+#define PWM1                        13             // GPIO 13 (PWM0_1)
+#define PWM2                        18             // GPIO 18 (PWM0_0)
+#define PWM3                        19             // GPIO 19 (PWM0_1)
+
+typedef enum
+{
+    PWM_ENABLE,
+    PWM_DISABLE
+}PWM_MODE;
+
+typedef enum
+{
+    PWM_CH0,
+    PWM_CH1
+}PWM_CHANEL;
+
+void pwm_set_clock(uint32_t divisor);
+void pwm_set_mode(bool channel, bool pwm_mode);
+void pwm_set_range(bool channel, uint32_t range);
+
+void pwm_setup(int PWM_pin, bool pwm_mode,uint32_t divisor, uint32_t range);
+void pwm_set();
+void pwm_write(int PWM_pin, uint32_t data);
 
 
+//---------UART---------//
+
+#define UART_REG                    (0x201000/4)
+#define UART_DR                     (0x00/4)
+#define UART_RSRECR                 (0x04/4)
+#define UART_FR                     (0x18/4)
+#define UART_ILPR                   (0x20/4)
+#define UART_IBRD                   (0x24/4)
+#define UART_FBRD                   (0x28/4)
+#define UART_LCRH                   (0x2C/4)
+#define UART_CR                     (0x30/4)
+#define UART_IFLS                   (0x34/4)
+#define UART_IMSC                   (0x38/4)
+#define UART_RIS                    (0x3C/4)
+#define UART_MIS                    (0x40/4)
+#define UART_ICR                    (0x44/4)
+#define UART_DMACR                  (0x48/4)
+#define UART_ITCR                   (0x80/4)
+#define UART_ITIP                   (0x84/4)
+#define UART_ITOP                   (0x88/4)
+#define UART_TDR                    (0x8C/4)
+
+void uart_setup(unsigned long baud);
+void uart_putc(unsigned char c);
+uint8_t uart_getc();
+void uart_puts(const char *str);
 
 #endif
 

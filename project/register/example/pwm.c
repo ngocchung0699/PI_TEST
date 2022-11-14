@@ -11,17 +11,17 @@
 
 #define PIN 26
 
+#define DIVISOR 16
+#define RANGE 1024
+
 int main() 
 {   
     lib_init();
-    pinMode(PIN, OUTPUT);
-    
+    pwm_setup(PWM0, PWM_ENABLE, DIVISOR, RANGE);
+    pwm_write(PWM0, 512);
     while (1)
     {
-        digitalWrite(PIN, HIGH);
-        delay_ms(500);
-        digitalWrite(PIN, LOW);
-        delay_ms(500);
+
     }
     lib_close();
     return (EXIT_SUCCESS);
