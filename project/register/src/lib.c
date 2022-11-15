@@ -389,6 +389,11 @@ void uart_setup(unsigned long baud)
     nopull_mode(14);
     nopull_mode(15);
 
+    int pin_tx = 14;
+    int pin_rx = 15;
+    *(gpio + GPIO_GPFSEL[pin_tx]) = (*(gpio + GPIO_GPFSEL[pin_tx]) & ~(7 << GPIO_SHIFT[pin_tx])) | (FSEL_ALT0 << GPIO_SHIFT[pin_tx]) ;
+    *(gpio + GPIO_GPFSEL[pin_rx]) = (*(gpio + GPIO_GPFSEL[pin_rx]) & ~(7 << GPIO_SHIFT[pin_rx])) | (FSEL_ALT0 << GPIO_SHIFT[pin_rx]) ;
+
     //Disable UART
     *(uart + UART_CR) = 0;
 
