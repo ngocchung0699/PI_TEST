@@ -137,7 +137,7 @@ void lib_init(){
         
     gpio = base + GPIO_REG;
     clk = base + CLK_REG;
-    pwm = base + GPIO_REG;
+    pwm = base + PWM0_REG;
     timer = base + TIMER_REG;
     uart = base + UART_REG;
     close(memfd);
@@ -156,33 +156,33 @@ void pinMode(int pin, int mode){
     if(mode == INPUT){
         *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_INPUT << GPIO_SHIFT[pin]) ;
     }
-    if(mode == INPUT_PULLUP){
+    else if(mode == INPUT_PULLUP){
         *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_INPUT << GPIO_SHIFT[pin]) ;
         pullup_mode(pin);
     }
-    if(mode == INPUT_PULLDOWN){
+    else if(mode == INPUT_PULLDOWN){
         *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_INPUT << GPIO_SHIFT[pin]) ;
         pulldown_mode(pin);
     }
-    if(mode == OUTPUT){
+    else if(mode == OUTPUT){
         *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_OUTPUT << GPIO_SHIFT[pin]) ;
     }
-    if(mode == FSEL_ALT0){
+    else if(mode == ALT0){
         *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_ALT0 << GPIO_SHIFT[pin]) ;
     }
-    if(mode == FSEL_ALT1){
+    else if(mode == ALT1){
         *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_ALT1 << GPIO_SHIFT[pin]) ;
     }
-    if(mode == FSEL_ALT2){
+    else if(mode == ALT2){
         *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_ALT2 << GPIO_SHIFT[pin]) ;
     }
-    if(mode == FSEL_ALT3){
+    else if(mode == ALT3){
         *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_ALT3 << GPIO_SHIFT[pin]) ;
     }
-    if(mode == FSEL_ALT4){
+    else if(mode == ALT4){
         *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_ALT4 << GPIO_SHIFT[pin]) ;
     }
-    if(mode == FSEL_ALT5){
+    else if(mode == ALT5){
         *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_ALT5 << GPIO_SHIFT[pin]) ;
     }
 }
@@ -194,14 +194,13 @@ void nopull_mode(int pin)
 
 void pullup_mode(int pin)
 {
-    *(gpio + GPIO_GPFSEL_PUD[pin]) = (*(gpio + GPIO_GPFSEL_PUD[pin]) & ~(3 << GPIO_PUP_PDN_CNTRL[pin])) | (INPUT_PULLUP << GPIO_PUP_PDN_CNTRL[pin]) ;
+    *(gpio + GPIO_GPFSEL_PUD[pin]) = (*(gpio + GPIO_GPFSEL_PUD[pin]) & ~(3 << GPIO_PUP_PDN_CNTRL[pin])) | (PULLUP << GPIO_PUP_PDN_CNTRL[pin]) ;
 }
 
 void pulldown_mode(int pin)
 {
-    *(gpio + GPIO_GPFSEL_PUD[pin]) = (*(gpio + GPIO_GPFSEL_PUD[pin]) & ~(3 << GPIO_PUP_PDN_CNTRL[pin])) | (INPUT_PULLDOWN << GPIO_PUP_PDN_CNTRL[pin]) ;
+    *(gpio + GPIO_GPFSEL_PUD[pin]) = (*(gpio + GPIO_GPFSEL_PUD[pin]) & ~(3 << GPIO_PUP_PDN_CNTRL[pin])) | (PULLDOWN << GPIO_PUP_PDN_CNTRL[pin]) ;
 }
-
 
 void digitalWrite(int pin, int value){   
     if (value == LOW)   { *(gpio + GPIO_GPCLR [pin]) = 1 << pin;}
@@ -283,7 +282,7 @@ uint32_t peri_read(volatile uint32_t* paddr)
 
 //----------PWM-----------//
 
-void pwm_set_clock(uint32_t divisor)
+void pwm_set_clock(int divisor)
 {
     if ( clk == MAP_FAILED || pwm == MAP_FAILED)
         return;
@@ -303,12 +302,15 @@ void pwm_set_mode(bool channel, bool pwm_mode)
     if (clk == MAP_FAILED || pwm == MAP_FAILED)
         return;
 
-    if(channel==1){
-        *(pwm + PWM_CTL) = 1<<15 | pwm_mode<<8;
+    uint32_t control = *(pwm + PWM_CTL);
+
+    if(channel==0){
+        control = 1 << 7 | pwm_mode << 0;
     }
     else{
-        *(pwm + PWM_CTL) = 1<<7 | pwm_mode;
+        control = 1 << 15 | pwm_mode << 8;
     }
+    *(clk + CLK_CNTL) = control;
 }
 
 void pwm_set_range(bool channel, uint32_t range)
@@ -316,11 +318,11 @@ void pwm_set_range(bool channel, uint32_t range)
     if (clk == MAP_FAILED || pwm == MAP_FAILED)
         return;
 
-    if(channel){
-        *(pwm + PWM_RNG2) = range;
+    if(channel == 0){
+        *(pwm + PWM_RNG1) = range;
     }
     else{
-        *(pwm + PWM_RNG1) = range;
+        *(pwm + PWM_RNG2) = range;
     }
 }
 
@@ -354,28 +356,6 @@ void pwm_setup(int PWM_pin, bool pwm_mode, uint32_t divisor, uint32_t range)
     pwm_set_clock(divisor);
 
     pwm_set_range(channel, range);
-}
-
-void pwm_set(){
-    int pin =18;
-    *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_ALT0 << GPIO_SHIFT[pin]) ;
-
-    if ( clk == MAP_FAILED || pwm == MAP_FAILED)
-        return;
-
-    *(clk + CLK_CNTL) = CLK_PASSWRD | 0x01;           // Enable clock oscillator
-
-    while ((*(clk + CLK_CNTL) & 0x80) != 0);            // Wait for reset
-
-    *(clk + CLK_DIV) = CLK_PASSWRD | 1 << 12;   // Set divisor
-
-    *(clk + CLK_CNTL) = CLK_PASSWRD | 0x11;           // Enable the clock generator
-
-    uint32_t ctl = 0;
-    ctl |= 0x81;
-
-    *(pwm + PWM_CTL) = ctl;
-    *(pwm + 4) = 1024;
 }
 
 void pwm_write(int PWM_pin, uint32_t data)

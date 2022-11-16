@@ -22,15 +22,23 @@ void lib_close();
 //--------GPIO----------//
 typedef enum
 {
-    INPUT           = 0x00,
-    OUTPUT          = 0x01
+    INPUT,
+    OUTPUT,
+    INPUT_PULLUP,
+    INPUT_PULLDOWN,
+    ALT0,
+    ALT1,
+    ALT2,
+    ALT3,
+    ALT4,
+    ALT5
 } GPIO_MODE;
 
 typedef enum
 {
-    NO_PULL         = 0x00,   /*!< Off ? disable pull-up/down 0b00 */
-    INPUT_PULLUP    = 0x01,   /*!< Enable Pull Down control 0b01 */
-    INPUT_PULLDOWN  = 0x02    /*!< Enable Pull Up control 0b10  */
+    NO_PULL         = 0x00,  
+    PULLUP          = 0x01,   
+    PULLDOWN        = 0x02   
 } GPIO_PU_PD_CONTROL;
 
 typedef enum
@@ -151,7 +159,7 @@ typedef enum
     PWM_CH1
 }PWM_CHANEL;
 
-void pwm_set_clock(uint32_t divisor);
+void pwm_set_clock(int divisor);
 void pwm_set_mode(bool channel, bool pwm_mode);
 void pwm_set_range(bool channel, uint32_t range);
 
