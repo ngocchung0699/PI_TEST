@@ -155,36 +155,35 @@ void pinMode(int pin, int mode){
     if(mode == INPUT){
         *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_INPUT << GPIO_SHIFT[pin]) ;
     }
-    else if(mode == INPUT_PULLUP){
+    if(mode == INPUT_PULLUP){
         *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_INPUT << GPIO_SHIFT[pin]) ;
         pullup_mode(pin);
     }
-    else if(mode == INPUT_PULLDOWN){
+    if(mode == INPUT_PULLDOWN){
         *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_INPUT << GPIO_SHIFT[pin]) ;
         pulldown_mode(pin);
     }
-    else if(mode == OUTPUT){
+    if(mode == OUTPUT){
         *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_OUTPUT << GPIO_SHIFT[pin]) ;
     }
-    else if(mode == FSEL_ALT0){
+    if(mode == FSEL_ALT0){
         *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_ALT0 << GPIO_SHIFT[pin]) ;
     }
-    else if(mode == FSEL_ALT1){
+    if(mode == FSEL_ALT1){
         *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_ALT1 << GPIO_SHIFT[pin]) ;
     }
-    else if(mode == FSEL_ALT2){
+    if(mode == FSEL_ALT2){
         *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_ALT2 << GPIO_SHIFT[pin]) ;
     }
-    else if(mode == FSEL_ALT3){
+    if(mode == FSEL_ALT3){
         *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_ALT3 << GPIO_SHIFT[pin]) ;
     }
-    else if(mode == FSEL_ALT4){
+    if(mode == FSEL_ALT4){
         *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_ALT4 << GPIO_SHIFT[pin]) ;
     }
-    else if(mode == FSEL_ALT5){
+    if(mode == FSEL_ALT5){
         *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_ALT5 << GPIO_SHIFT[pin]) ;
     }
-    else{}
 }
 
 void nopull_mode(int pin)
