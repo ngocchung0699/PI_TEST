@@ -16,11 +16,11 @@
 // Copyright (C) 2011 Mike McCauley
 // $Id: RF22.h,v 1.21 2012/05/30 01:51:25 mikem Exp $
 
-#include <bcm2835.h>
+#include "bcm2835.h"
 #include <stdio.h>
 
 // Blinks on RPi Plug P1 pin 11 (which is GPIO pin 17)
-#define PIN RPI_GPIO_P1_11
+#define PIN 26
 
 int main(int argc, char **argv)
 {

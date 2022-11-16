@@ -136,6 +136,7 @@ void lib_init(){
         printf("mmap gpio failed: %s\n", strerror(errno));  
         
     gpio = base + GPIO_REG;
+    clk = base + CLK_REG;
     pwm = base + GPIO_REG;
     timer = base + TIMER_REG;
     uart = base + UART_REG;
@@ -292,7 +293,7 @@ void pwm_set_clock(uint32_t divisor)
 
     while ((*(clk + CLK_CNTL) & 0x80) != 0);            // Wait for reset
 
-    *(clk + CLK_DIV) = CLK_PASSWRD | divisor << 12;   // Set divisor
+    *(clk + CLK_DIV) = CLK_PASSWRD | (divisor << 12);   // Set divisor
 
     *(clk + CLK_CNTL) = CLK_PASSWRD | 0x11;           // Enable the clock generator
 }
@@ -302,7 +303,7 @@ void pwm_set_mode(bool channel, bool pwm_mode)
     if (clk == MAP_FAILED || pwm == MAP_FAILED)
         return;
 
-    if(channel){
+    if(channel==1){
         *(pwm + PWM_CTL) = 1<<15 | pwm_mode<<8;
     }
     else{
@@ -371,8 +372,7 @@ void pwm_set(){
     *(clk + CLK_CNTL) = CLK_PASSWRD | 0x11;           // Enable the clock generator
 
     uint32_t ctl = 0;
-    ctl |= 0x80;
-    ctl |= 0x01;
+    ctl |= 0x81;
 
     *(pwm + PWM_CTL) = ctl;
     *(pwm + 4) = 1024;

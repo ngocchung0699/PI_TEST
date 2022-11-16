@@ -50,9 +50,10 @@ int main(int argc, char **argv)
     // over the course of a a few seconds
     int direction = 1; // 1 is increase, -1 is decrease
     int data = 1;
+	bcm2835_pwm_set_data(PWM_CHANNEL, 512);
     while (1)
     {
-	    bcm2835_pwm_set_data(PWM_CHANNEL, 512);
+	    
     }
 
     bcm2835_close();

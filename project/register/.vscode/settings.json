@@ -5,6 +5,7 @@
         "lib_uart.h": "c",
         "stdint.h": "c",
         "unistd.h": "c",
-        "fcntl.h": "c"
+        "fcntl.h": "c",
+        "bcm2835.h": "c"
     }
 }

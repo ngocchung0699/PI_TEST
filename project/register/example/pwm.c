@@ -17,8 +17,8 @@
 int main() 
 {   
     lib_init();
-    pwm_setup(PWM0, PWM_ENABLE, DIVISOR, RANGE);
-    pwm_write(PWM0, 512);
+    pwm_setup(PWM2, PWM_ENABLE, DIVISOR, RANGE);
+    pwm_write(PWM2, 512);
     while (1)
     {
 
