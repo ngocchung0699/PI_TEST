@@ -305,9 +305,12 @@ void pwm_set_mode(bool channel, bool pwm_mode)
     uint32_t control = *(pwm + PWM_CTL);
 
     if(channel==0){
+        if(pwm_mode){
+
+        }
         control = 1 << 7 | pwm_mode << 0;
     }
-    else{
+    else if(channel==1){
         control = 1 << 15 | pwm_mode << 8;
     }
     *(clk + CLK_CNTL) = control;
@@ -333,28 +336,25 @@ void pwm_setup(int PWM_pin, bool pwm_mode, uint32_t divisor, uint32_t range)
     if(PWM_pin == PWM0){ 
         pin = PWM_pin;
         channel = 0;
-        *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_ALT0 << GPIO_SHIFT[pin]) ;
+        pinMode(pin, ALT0);
     }
     else if(PWM_pin == PWM1){ 
         pin = PWM_pin;
         channel = 1;
-        *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_ALT0 << GPIO_SHIFT[pin]) ;
+        pinMode(pin, ALT0);
     }
     else if(PWM_pin == PWM2){ 
         pin = PWM_pin;
         channel = 0;
-        *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_ALT5 << GPIO_SHIFT[pin]) ;
+        pinMode(pin, ALT5);
     }
     else if(PWM_pin == PWM3){ 
         pin = PWM_pin;
         channel = 1;
-        *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_ALT5 << GPIO_SHIFT[pin]) ;
+        pinMode(pin, ALT5);
     }
-
-    pwm_set_mode(channel, pwm_mode);
-
     pwm_set_clock(divisor);
-
+    pwm_set_mode(channel, pwm_mode);
     pwm_set_range(channel, range);
 }
 
