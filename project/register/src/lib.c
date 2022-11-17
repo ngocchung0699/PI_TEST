@@ -273,109 +273,106 @@ void sys_timer_delay(uint64_t offset_micros, uint64_t micros)
     while(sys_timer_read() < compare);
 }
 
+
+//---------PWM-HARDWARE----------//
+////only used for GPIO 18
+
+/* Read with memory barriers from peripheral
+ *
+ */
 uint32_t peri_read(volatile uint32_t* paddr)
 {
     uint32_t ret;
+    __sync_synchronize();
     ret = *paddr;
+    __sync_synchronize();
     return ret;
 }
 
-//----------PWM-----------//
-
-void pwm_set_clock(int divisor)
+void peri_write(volatile uint32_t* paddr, uint32_t value)
 {
-    if ( clk == MAP_FAILED || pwm == MAP_FAILED)
+    __sync_synchronize();
+    *paddr = value;
+    __sync_synchronize();
+}
+
+void pwm_hw_set_clock(float divisor)
+{
+    if (   clk == MAP_FAILED || pwm == MAP_FAILED)
+      return; /* bcm2835_init() failed or not root */
+    uint32_t div;
+
+    div = (int) divisor*2.8125;  // divisor*540/192
+    /* From Gerts code */
+    div &= 0xfff;
+    /* Stop PWM clock */
+    peri_write(clk + CLK_CNTL, CLK_PASSWRD | 0x01);
+    // delay_us(110); /* Prevents clock going slow */
+    /* Wait for the clock to be not busy */
+    while ((peri_read(clk + CLK_CNTL) & 0x80) != 0)
+	// delay_us(1); 
+    /* set the clock divider and enable PWM clock */
+    peri_write(clk + CLK_DIV, CLK_PASSWRD | (div << 12));
+    peri_write(clk + CLK_CNTL, CLK_PASSWRD | 0x11); /* Source=osc and enable */
+}
+
+void pwm_hw_set_mode(uint8_t channel, uint8_t enabled)
+{
+  if (   clk == MAP_FAILED || pwm == MAP_FAILED)
+    return; /* bcm2835_init() failed or not root */
+
+  uint32_t control = peri_read(pwm + PWM_CTL);
+
+  if (channel == 0)
+    {
+      if (enabled)
+	control |= PWM0_ENABLE;
+      else
+	control &= ~PWM0_ENABLE;
+    }
+  else if (channel == 1)
+    {
+      if (enabled)
+	control |= PWM1_ENABLE;
+      else
+	control &= ~PWM1_ENABLE;
+    }
+  peri_write(pwm + PWM_CTL, control);
+}
+
+void pwm_hw_set_range(uint8_t channel, uint32_t range)
+{
+  if (   clk == MAP_FAILED || pwm == MAP_FAILED)
+    return;
+
+  if (channel == 0)
+        peri_write(pwm + PWM0_RANGE, range);
+  else if (channel == 1)
+        peri_write(pwm + PWM1_RANGE, range);
+}
+
+void pwm_hw_setup(bool pwm_mode, uint32_t divisor, uint32_t range)
+{
+    pinMode(18, ALT5);
+    pwm_hw_set_clock(divisor);
+    pwm_hw_set_mode(0, pwm_mode);
+    pwm_hw_set_range(0, range);
+}
+
+void pwm_hw_write(uint32_t data)
+{
+    if (   clk == MAP_FAILED || pwm == MAP_FAILED)
         return;
-    divisor &= 0xfff;
-
-    *(clk + CLK_CNTL) = CLK_PASSWRD | 0x01;           // Enable clock oscillator
-
-    while ((*(clk + CLK_CNTL) & 0x80) != 0);            // Wait for reset
-
-    *(clk + CLK_DIV) = CLK_PASSWRD | (divisor << 12);   // Set divisor
-
-    *(clk + CLK_CNTL) = CLK_PASSWRD | 0x11;           // Enable the clock generator
+    int channel =0;
+    if (channel == 0)
+        peri_write(pwm + PWM0_DATA, data);
+    else if (channel == 1)
+        peri_write(pwm + PWM1_DATA, data);
 }
 
-void pwm_set_mode(bool channel, bool pwm_mode)
-{
-    if (clk == MAP_FAILED || pwm == MAP_FAILED)
-        return;
 
-    uint32_t control = *(pwm + PWM_CTL);
 
-    if(channel==0){
-        if(pwm_mode){
 
-        }
-        control = 1 << 7 | pwm_mode << 0;
-    }
-    else if(channel==1){
-        control = 1 << 15 | pwm_mode << 8;
-    }
-    *(clk + CLK_CNTL) = control;
-}
-
-void pwm_set_range(bool channel, uint32_t range)
-{
-    if (clk == MAP_FAILED || pwm == MAP_FAILED)
-        return;
-
-    if(channel == 0){
-        *(pwm + PWM_RNG1) = range;
-    }
-    else{
-        *(pwm + PWM_RNG2) = range;
-    }
-}
-
-void pwm_setup(int PWM_pin, bool pwm_mode, uint32_t divisor, uint32_t range)
-{
-    int pin;
-    bool channel;
-    if(PWM_pin == PWM0){ 
-        pin = PWM_pin;
-        channel = 0;
-        pinMode(pin, ALT0);
-    }
-    else if(PWM_pin == PWM1){ 
-        pin = PWM_pin;
-        channel = 1;
-        pinMode(pin, ALT0);
-    }
-    else if(PWM_pin == PWM2){ 
-        pin = PWM_pin;
-        channel = 0;
-        pinMode(pin, ALT5);
-    }
-    else if(PWM_pin == PWM3){ 
-        pin = PWM_pin;
-        channel = 1;
-        pinMode(pin, ALT5);
-    }
-    pwm_set_clock(divisor);
-    pwm_set_mode(channel, pwm_mode);
-    pwm_set_range(channel, range);
-}
-
-void pwm_write(int PWM_pin, uint32_t data)
-{
-    if (clk == MAP_FAILED || pwm == MAP_FAILED)
-        return;
-
-    if(PWM_pin == PWM0){ 
-        *(pwm + PWM_DAT1) = data;
-    }
-    else if(PWM_pin == PWM1){    
-        *(pwm + PWM_DAT2) = data;
-    }
-    else if(PWM_pin == PWM2){ 
-        *(pwm + PWM_DAT1) = data;
-    }
-    else if(PWM_pin == PWM3){ 
-        *(pwm + PWM_DAT2) = data;
-    }
-}
 
 //----------UART----------//
 

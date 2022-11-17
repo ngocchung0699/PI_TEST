@@ -9,16 +9,11 @@
 #include <stdint.h>
 #include "lib.h"
 
-#define PIN 26
-
-#define DIVISOR 16
-#define RANGE 1024
-
 int main() 
 {   
     lib_init();
-    pwm_setup(PWM2, PWM_ENABLE, DIVISOR, RANGE);
-    pwm_write(PWM2, 512);
+    pwm_hw_setup(PWM_ENABLE, 19.2, 4);  // (T = 1*range us)
+    pwm_hw_write(1);
     while (1)
     {
 

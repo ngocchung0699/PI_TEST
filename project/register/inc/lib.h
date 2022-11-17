@@ -120,8 +120,6 @@ uint64_t sys_timer_read(void);
 void sys_timer_delay(uint64_t offset_micros, uint64_t micros);
 uint32_t peri_read(volatile uint32_t* paddr);
 
-//---------PWM----------//
-
 //---------CLOCK---------//
 
 #define CLK_REG                     (0x101000/4)
@@ -129,7 +127,9 @@ uint32_t peri_read(volatile uint32_t* paddr);
 #define CLK_DIV                     41
 #define CLK_PASSWRD                 (0x5A << 24)  //Password to enable setting PWM clock 
 
-//---------PWM----------//
+//---------PWM-HARDWARE----------//
+
+//only used for GPIO 18
 
 #define PWM0_REG                    (0x20c000/4)
 #define PWM1_REG                    (0x20c800/4)   // do not use
@@ -142,15 +142,22 @@ uint32_t peri_read(volatile uint32_t* paddr);
 #define PWM_RNG2                    (0x20/4)
 #define PWM_DAT2                    (0x24/4)
 
-#define PWM0                        12             // GPIO 12 (PWM0_0)
-#define PWM1                        13             // GPIO 13 (PWM0_1)
-#define PWM2                        18             // GPIO 18 (PWM0_0)
-#define PWM3                        19             // GPIO 19 (PWM0_1)
+#define PWM0                        12             // GPIO 12 (PWM0_0, ALT0)
+#define PWM1                        13             // GPIO 13 (PWM0_1, ALT0)
+#define PWM2                        18             // GPIO 18 (PWM0_0, ALT5)
+#define PWM3                        19             // GPIO 19 (PWM0_1, ALT5)
+
+#define PWM0_ENABLE 0x0081
+#define PWM1_ENABLE 0x8100
+#define PWM0_RANGE  4
+#define PWM1_RANGE  8
+#define PWM0_DATA  5
+#define PWM1_DATA  9
 
 typedef enum
-{
-    PWM_ENABLE,
-    PWM_DISABLE
+{   
+    PWM_DISABLE,
+    PWM_ENABLE
 }PWM_MODE;
 
 typedef enum
@@ -159,13 +166,15 @@ typedef enum
     PWM_CH1
 }PWM_CHANEL;
 
-void pwm_set_clock(int divisor);
-void pwm_set_mode(bool channel, bool pwm_mode);
-void pwm_set_range(bool channel, uint32_t range);
+void pwm_hw_set_clock(float divisor);
+void pwm_hw_set_mode(uint8_t channel, uint8_t enabled);
+void pwm_hw_set_range(uint8_t channel, uint32_t range);
+void pwm_hw_setup(bool pwm_mode,uint32_t divisor, uint32_t range);
+void pwm_hw_write(uint32_t data);
 
-void pwm_setup(int PWM_pin, bool pwm_mode,uint32_t divisor, uint32_t range);
-void pwm_set();
-void pwm_write(int PWM_pin, uint32_t data);
+//---------PWM-SOFTWARE---------//
+
+
 
 
 //---------UART---------//
