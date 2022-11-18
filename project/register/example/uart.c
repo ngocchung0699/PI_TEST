@@ -9,17 +9,24 @@
 #include <stdint.h>
 #include "lib.h"
 
+#define PIN 18
+
+uint8_t data = 0x53;
 
 int main() 
 {   
     lib_init();
-    uart_setup(0, 9600);
+    uart_hw_setup(115200);
+
+    uart_setup(13, 19, 9600);
     
     while (1)
     {
-        uart_putc(0x41);
-        delay_us(100);
+        uart_send_string("hello world\r\n");
+        delay_us(500);
     }
     lib_close();
     return (EXIT_SUCCESS);
 }
+
+
