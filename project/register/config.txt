@@ -82,7 +82,8 @@ arm_boost=1
 
 [all]
 
+kernel=kernel8.img
 init_uart_clock=3000000
 enable_uart=1
-core_freq=250
+core_freq=500
 dtoverlay=w1-gpio

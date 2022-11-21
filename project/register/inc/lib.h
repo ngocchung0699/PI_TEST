@@ -262,5 +262,26 @@ void uart_setup(uint8_t pin_tx, uint8_t pin_rx, unsigned long baud);
 void uart_send_char(char data);
 void uart_send_string(const char *data);
 
+
+#define AUX_REG             (0x215000/4)
+
+#define AUX_IRQ             (0x00/4)
+#define AUX_ENABLES         (0x04/4)
+#define AUX_MU_IO_REG       (0x40/4)
+#define AUX_MU_IER_REG      (0x44/4)
+#define AUX_MU_IIR_REG      (0x48/4)
+#define AUX_MU_LCR_REG      (0x4c/4)
+#define AUX_MU_MCR_REG      (0x50/4)
+#define AUX_MU_LSR_REG      (0x54/4)
+#define AUX_MU_MSR_REG      (0x58/4)
+#define AUX_MU_SCRATCH      (0x5c/4)
+#define AUX_MU_CNTL_REG     (0x60/4)
+#define AUX_MU_STAT_REG     (0x64/4)
+#define AUX_MU_BAUD_REG     (0x68/4)
+
+void aux_uart_setup(long baud);
+char aux_uart_receive();
+void aux_uart_send_char(char c);
+void aux_uart_send_string(const char *c);
 #endif
 
