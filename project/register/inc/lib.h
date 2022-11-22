@@ -182,7 +182,12 @@ void pwm_off(uint8_t pin);
 
 //---------UART---------//
 
-#define UART_REG                    (0x201000/4)
+#define UART0_REG                    (0x201000/4)
+#define UART2_REG                    (0x201400/4)
+#define UART3_REG                    (0x201600/4)
+#define UART4_REG                    (0x201800/4)
+#define UART5_REG                    (0x201a00/4)
+
 #define UART_DR                     (0x00/4)
 #define UART_RSRECR                 (0x04/4)
 #define UART_FR                     (0x18/4)
@@ -203,65 +208,12 @@ void pwm_off(uint8_t pin);
 #define UART_TDR                    (0x8C/4)
 
 
-void uart_hw_setup(unsigned long baud);
-void uart_putc(unsigned char c);
-char uart_getc();
-void uart_puts(const char *str);
-
-//-----------UART-SOFTWARE-----------//
-
-#define B300 3333
-#define B600 1667
-#define B1200 833
-#define B2400 417
-#define B4800 208
-#define B9600 104
-#define B14400 69
-#define B19200 52
-#define B28800 35
-#define B38400 26
-#define B56000 18
-#define B57600 17
-#define B115200 9
-#define B128000 8
-#define B256000 4
-#define B300000 3
-#define B500000 2
-#define B1000000 1
-
-#define E300 0
-#define E600 0
-#define E1200 0
-#define E2400 0
-#define E4800 0
-#define E9600 0
-#define E14400 0
-#define E19200 0
-#define E28800 0
-#define E38400 0
-#define E56000 1
-#define E57600 -2
-#define E115200 2
-#define E128000 -2
-#define E256000 1
-#define E300000 -2
-#define E500000 0
-#define E1000000 0
-
-typedef struct
-{
-    uint8_t pin_tx;
-    uint8_t pin_rx;
-    int t_bit;
-    int t_error;
-    uint8_t data;
-}uart_struct;
-
-
-void uart_setup(uint8_t pin_tx, uint8_t pin_rx, unsigned long baud);
-void uart_send_char(char data);
+void uart_setup(unsigned long baud);
+void uart_send_char(unsigned char data);
+char uart_receive();
 void uart_send_string(const char *data);
 
+//----------AUX-UART-----------//
 
 #define AUX_REG             (0x215000/4)
 
@@ -281,7 +233,22 @@ void uart_send_string(const char *data);
 
 void aux_uart_setup(long baud);
 char aux_uart_receive();
-void aux_uart_send_char(char c);
-void aux_uart_send_string(const char *c);
+void aux_uart_send_char(char data);
+void aux_uart_send_string(const char *data);
+
+
+//-----------I2C-------------//
+
+
+
+
+
+
+
+
+
 #endif
+
+
+
 

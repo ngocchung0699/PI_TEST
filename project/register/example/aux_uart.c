@@ -9,18 +9,16 @@
 #include <stdint.h>
 #include "lib.h"
 
+#define PIN 18
 
 int main() 
 {   
     lib_init();
-    uart_setup(115200);
-    uart_send_char(0x41);
+    aux_uart_setup(115200);
+    aux_uart_send_char(0x41);
     while (1)
     {
-        // char data = uart_receive();
-        // printf("value: %d \n", data);
-        // delay_ms(100);
-        uart_send_char(0x41);
+        aux_uart_send_string("hello \r\n");
         delay_ms(100);
     }
     lib_close();

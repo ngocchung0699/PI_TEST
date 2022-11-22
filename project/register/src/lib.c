@@ -17,7 +17,12 @@ static volatile uint32_t *gpio ;
 static volatile uint32_t *clk ;
 static volatile uint32_t *pwm ;
 static volatile uint32_t *timer ;
-static volatile uint32_t *uart ;
+static volatile uint32_t *uart0 ;
+static volatile uint32_t *uart2 ;
+static volatile uint32_t *uart3 ;
+static volatile uint32_t *uart4 ;
+static volatile uint32_t *uart5 ;
+
 static volatile uint32_t *aux ;
 
 
@@ -143,11 +148,15 @@ void lib_init(){
     clk = base + CLK_REG;
     pwm = base + PWM0_REG;
     timer = base + TIMER_REG;
-    uart = base + UART_REG;
+    uart0 = base + UART0_REG;
+    uart2 = base + UART2_REG;
+    uart3 = base + UART3_REG;
+    uart4 = base + UART4_REG;
+    uart5 = base + UART5_REG;
     aux = base + AUX_REG;
 
-    // pthread_t threadId ;
-    // pthread_create (&threadId, NULL, thr, NULL) ;
+    pthread_t threadId ;
+    pthread_create (&threadId, NULL, thr, NULL);
     close(memfd);
 }
 
@@ -155,7 +164,13 @@ void lib_close(){
     munmap(&base, BLOCK_SIZE);
     gpio = MAP_FAILED;
     timer = MAP_FAILED;
-    uart = MAP_FAILED;
+    aux = MAP_FAILED;
+    uart0 = MAP_FAILED;
+    uart2 = MAP_FAILED;
+    uart3 = MAP_FAILED;
+    uart4 = MAP_FAILED;
+    uart5 = MAP_FAILED;
+
 }
 
 
@@ -222,12 +237,12 @@ bool digitalRead(int pin){
         return LOW;
     }
 }
+
 /* miliseconds */
 void delay_ms(uint64_t milis)
 {
     delay_us(milis * 1000);
 }
-
 
 /* microseconds */
 void delay_us(uint64_t micros)
@@ -425,137 +440,58 @@ void pwm_off(uint8_t pin)
     *(gpio + GPIO_GPFSEL[pin]) = (*(gpio + GPIO_GPFSEL[pin]) & ~(7 << GPIO_SHIFT[pin])) | (FSEL_INPUT << GPIO_SHIFT[pin]) ;
 }
 
-
 //----------UART----------//
 
 // uart0
-void uart_hw_setup(unsigned long baud)
+void uart_setup(unsigned long baud)
 {
     // Disable pull up/down for pin 14,15 & delay for 150 cycles.
-    nopull_mode(14);
-    nopull_mode(15);
-
-    int pin_tx = 14;
-    int pin_rx = 15;
-    *(gpio + GPIO_GPFSEL[pin_tx]) = (*(gpio + GPIO_GPFSEL[pin_tx]) & ~(7 << GPIO_SHIFT[pin_tx])) | (FSEL_ALT0 << GPIO_SHIFT[pin_tx]) ;
-    *(gpio + GPIO_GPFSEL[pin_rx]) = (*(gpio + GPIO_GPFSEL[pin_rx]) & ~(7 << GPIO_SHIFT[pin_rx])) | (FSEL_ALT0 << GPIO_SHIFT[pin_rx]) ;
-
+    pinMode(4, ALT4);
+    pinMode(5, ALT4);
     //Disable UART
-    *(uart + UART_CR) = 0;
+    *(uart3 + UART_CR) = 0;
 
     // Clear uart Flag Register
-    *(uart + UART_FR) = 0;
+    *(uart4 + UART_FR) = 0;
 
     // Clear pending interrupts.
-    *(uart + UART_ICR) = 0x7FF;
+    *(uart4 + UART_ICR) = 0x7FF;
 
     uint32_t value = 16*baud;
     uint32_t value_i = (3000000 / value);
     uint32_t value_f = (3000000000/value - value_i* 1000)*64/1000 + 0.5;
 
     // Divider = 3000000 / (16 * baud)
-    *(uart + UART_IBRD) = (int) value_i;
+    *(uart4 + UART_IBRD) = (int) value_i;
 
     // Fractional part register
-    *(uart + UART_FBRD) = (int) value_f;
+    *(uart4 + UART_FBRD) = (int) value_f;
 
     //Clear UART FIFO by writing 0 in FEN bit of LCRH register
-    *(uart + UART_LCRH) = (0 << 4);
+    *(uart4 + UART_LCRH) = (0 << 4);
 
     // Enable FIFO & 8 bit data transmissio (1 stop bit, no parity)
-	*(uart + UART_LCRH) = (1 << 4) | (1 << 5) | (1 << 6);
+	*(uart4 + UART_LCRH) = (1 << 4) | (1 << 5) | (1 << 6);
 
     // Mask all interrupts.
-	*(uart + UART_IMSC) = (1 << 1) | (1 << 4) | (1 << 5) | (1 << 6) |
+	*(uart4 + UART_IMSC) = (1 << 1) | (1 << 4) | (1 << 5) | (1 << 6) |
                                (1 << 7) | (1 << 8) | (1 << 9) | (1 << 10);
 
-    // Enable UART0, receive & transfer part of UART.                  
-	*(uart + UART_CR) = (1 << 0) | (1 << 8) | (1 << 9);
+    // Enable uart4, receive & transfer part of UART.                  
+	*(uart4 + UART_CR) = (1 << 0) | (1 << 8) | (1 << 9);
 }
 
-void uart_putc(unsigned char c)
+void uart_send_char(unsigned char data)
 {
-    while (*(uart + UART_FR) & (1 << 5)); // Wait until there is room for new data in Transmission fifo
-    *(uart + UART_DR) = (unsigned char) c; // Write data in transmission fifo
+    while (*(uart4 + UART_FR) & (1 << 5)); // Wait until there is room for new data in Transmission fifo
+    *(uart4 + UART_DR) = (unsigned char) data; // Write data in transmission fifo
     delay_us(150);
 }
 
-char uart_getc()
+char uart_receive()
 {
-    while (*(uart + UART_FR) & (1 << 4)); // Wait until data arrives in Rx fifo. Bit 4 is set when RX fifo is empty
-    char data = *(uart + UART_DR);
-    return (unsigned char) data;
-}
-
-void uart_puts(const char *str)
-{
-    for (size_t i = 0; str[i] != '\0'; i++)
-    {
-        uart_putc( (char) str[i] );
-    }
-    delay_us(150);
-}
-
-
-//-----------UART-SOFTWARE-----------//
-
-uart_struct uart_set;
-
-void uart_setup(uint8_t pin_tx, uint8_t pin_rx,unsigned long baud)
-{
-    
-    pinMode(pin_tx, OUTPUT);
-    pinMode(pin_rx, INPUT);
-
-    int time_bit = 0;
-    int time_error = 0;
-
-    if      (baud == 300)       { time_bit = B300;      time_error = E300; }
-    else if (baud == 600 )      { time_bit = B600;      time_error = E600;}
-    else if (baud == 1200 )     { time_bit = B1200;     time_error = E1200;}
-    else if (baud == 2400 )     { time_bit = B1200;     time_error = E1200;}
-    else if (baud == 4800 )     { time_bit = B4800;     time_error = E4800;}
-    else if (baud == 9600 )     { time_bit = B9600;     time_error = E9600;}
-    else if (baud == 14400 )    { time_bit = B14400;    time_error = E14400;}
-    else if (baud == 19200 )    { time_bit = B19200;    time_error = E19200;}
-    else if (baud == 28800 )    { time_bit = B28800;    time_error = E28800;}
-    else if (baud == 38400 )    { time_bit = B38400;    time_error = E38400;}
-    else if (baud == 56000 )    { time_bit = B56000;    time_error = E56000;}
-    else if (baud == 57600 )    { time_bit = B57600;    time_error = E57600;}
-    else if (baud == 115200 )   { time_bit = B115200;   time_error = E115200;}
-    else if (baud == 128000 )   { time_bit = B128000;   time_error = E128000;}
-    else if (baud == 256000 )   { time_bit = B256000;   time_error = E256000;}
-    else if (baud == 300000 )   { time_bit = B300000;   time_error = E300000;}
-    else if (baud == 500000 )   { time_bit = B500000;   time_error = E500000;}
-    else if (baud == 1000000 )  { time_bit = B1000000;  time_error = E1000000;}
-
-    uart_set.pin_tx = pin_tx;
-    uart_set.pin_rx = pin_rx;
-    uart_set.t_bit = time_bit;
-    uart_set.data = 0;
-    uart_set.t_error = time_error;
-
-}
-
-void uart_send_char(char data)
-{
-    uart_set.data = data;
-    
-    digitalWrite(uart_set.pin_tx, 1);
-    digitalWrite(uart_set.pin_tx, 0);
-    delay_us(uart_set.t_bit - uart_set.t_error);
-    for (int i = 0; i < 8; i++) 
-    {
-        
-        if(data&(1<<i))     { digitalWrite(uart_set.pin_tx, 1); }
-            
-        else                { digitalWrite(uart_set.pin_tx, 0); }
-        delay_us(uart_set.t_bit);
-        
-    }
-    
-    digitalWrite(uart_set.pin_tx, 1);
-    delay_us(uart_set.t_bit * 10);
+    while (!(*(uart4 + UART_FR) & (1 << 4))); // Wait until data arrives in Rx fifo. Bit 4 is set when RX fifo is empty
+    return (unsigned char) *(uart4 + UART_DR);
 }
 
 void uart_send_string(const char *data)
@@ -564,7 +500,9 @@ void uart_send_string(const char *data)
     {
         uart_send_char( (char) data[i] );
     }
+    delay_us(150);
 }
+
 
 void aux_uart_setup(long baud)
 {
@@ -588,12 +526,12 @@ void aux_uart_setup(long baud)
     *(aux + AUX_MU_CNTL_REG) = 1<<0 | 1<<1;
 }
 
-void aux_uart_send_char(char c)
+void aux_uart_send_char(char data)
 {
     /* keep looping if the 5th bit is 0 */
     while (!(*(aux + AUX_MU_LSR_REG) & 0x20));
 
-    *(aux + AUX_MU_IO_REG) = c;
+    *(aux + AUX_MU_IO_REG) = data;
 }
 
 char aux_uart_receive()
@@ -602,10 +540,24 @@ char aux_uart_receive()
 
     return *(aux + AUX_MU_IO_REG) & 0xFF;
 }
-void aux_uart_send_string(const char *c)
+void aux_uart_send_string(const char *data)
 {
-    for(int i=0; c[i] != '\0';i++)
+    for(int i=0; data[i] != '\0';i++)
     {
-        aux_uart_send_char(c[i]);
+        aux_uart_send_char(data[i]);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
