@@ -239,7 +239,24 @@ void aux_uart_send_string(const char *data);
 
 //-----------I2C-------------//
 
+#define BSC0_REG            (0x205000/4)     // use by boot
+#define BSC1_REG            (0x804000/4)
+// BSC2  -  use by the HDMI
+#define BSC3_REG            (0x205600/4)
+#define BSC4_REG            (0x205800/4)
+#define BSC5_REG            (0x205a00/4)
+#define BSC6_REG            (0x205c00/4)
+// BSC7  -  use by the HDMI
+#define BSC_C           (0x00/4)
+#define BSC_S           (0x04/4)
+#define BSC_DLEN        (0x08/4)
+#define BSC_A           (0x0C/4)
+#define BSC_FIFO        (0x10/4)
+#define BSC_DIV         (0x14/4)
+#define BSC_DEL         (0x18/4)
+#define BSC_CLKT        (0x1C/4)
 
+void i2c_setup();
 
 
 

@@ -17,14 +17,18 @@ static volatile uint32_t *gpio ;
 static volatile uint32_t *clk ;
 static volatile uint32_t *pwm ;
 static volatile uint32_t *timer ;
+static volatile uint32_t *aux ;
 static volatile uint32_t *uart0 ;
 static volatile uint32_t *uart2 ;
 static volatile uint32_t *uart3 ;
 static volatile uint32_t *uart4 ;
 static volatile uint32_t *uart5 ;
-
-static volatile uint32_t *aux ;
-
+static volatile uint32_t *i2c0 ;
+static volatile uint32_t *i2c1 ;
+static volatile uint32_t *i2c3 ;
+static volatile uint32_t *i2c4 ;
+static volatile uint32_t *i2c5 ;
+static volatile uint32_t *i2c6 ;
 
 static volatile uint32_t reg_pwm;
 
@@ -154,9 +158,15 @@ void lib_init(){
     uart4 = base + UART4_REG;
     uart5 = base + UART5_REG;
     aux = base + AUX_REG;
+    i2c0 = base + BSC0_REG;
+    i2c1 = base + BSC1_REG;
+    i2c3 = base + BSC3_REG;
+    i2c4 = base + BSC4_REG;
+    i2c5 = base + BSC5_REG;
+    i2c6 = base + BSC6_REG;
 
-    pthread_t threadId ;
-    pthread_create (&threadId, NULL, thr, NULL);
+    //pthread_t threadId ;
+    //pthread_create (&threadId, NULL, thr, NULL);
     close(memfd);
 }
 
@@ -170,7 +180,12 @@ void lib_close(){
     uart3 = MAP_FAILED;
     uart4 = MAP_FAILED;
     uart5 = MAP_FAILED;
-
+    i2c0 = MAP_FAILED;
+    i2c1 = MAP_FAILED;
+    i2c3 = MAP_FAILED;
+    i2c4 = MAP_FAILED;
+    i2c5 = MAP_FAILED;
+    i2c6 = MAP_FAILED;
 }
 
 
@@ -549,6 +564,13 @@ void aux_uart_send_string(const char *data)
 }
 
 
+//-----------I2C-------------//
+
+void i2c_setup()
+{
+    pinMode(2, ALT0);   // PIN 2 IS SDA
+    pinMode(3, ALT0);   // PIN 2 IS SCL
+}
 
 
 
