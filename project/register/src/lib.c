@@ -461,52 +461,52 @@ void pwm_off(uint8_t pin)
 void uart_setup(unsigned long baud)
 {
     // Disable pull up/down for pin 14,15 & delay for 150 cycles.
-    pinMode(4, ALT4);
-    pinMode(5, ALT4);
+    pinMode(14, ALT0);
+    pinMode(15, ALT0);
     //Disable UART
-    *(uart3 + UART_CR) = 0;
+    *(uart0 + UART_CR) = 0;
 
     // Clear uart Flag Register
-    *(uart4 + UART_FR) = 0;
+    *(uart0 + UART_FR) = 0;
 
     // Clear pending interrupts.
-    *(uart4 + UART_ICR) = 0x7FF;
+    *(uart0 + UART_ICR) = 0x7FF;
 
     uint32_t value = 16*baud;
     uint32_t value_i = (3000000 / value);
     uint32_t value_f = (3000000000/value - value_i* 1000)*64/1000 + 0.5;
 
     // Divider = 3000000 / (16 * baud)
-    *(uart4 + UART_IBRD) = (int) value_i;
+    *(uart0 + UART_IBRD) = (int) value_i;
 
     // Fractional part register
-    *(uart4 + UART_FBRD) = (int) value_f;
+    *(uart0 + UART_FBRD) = (int) value_f;
 
     //Clear UART FIFO by writing 0 in FEN bit of LCRH register
-    *(uart4 + UART_LCRH) = (0 << 4);
+    *(uart0 + UART_LCRH) = (0 << 4);
 
     // Enable FIFO & 8 bit data transmissio (1 stop bit, no parity)
-	*(uart4 + UART_LCRH) = (1 << 4) | (1 << 5) | (1 << 6);
+	*(uart0 + UART_LCRH) = (1 << 4) | (1 << 5) | (1 << 6);
 
     // Mask all interrupts.
-	*(uart4 + UART_IMSC) = (1 << 1) | (1 << 4) | (1 << 5) | (1 << 6) |
+	*(uart0 + UART_IMSC) = (1 << 1) | (1 << 4) | (1 << 5) | (1 << 6) |
                                (1 << 7) | (1 << 8) | (1 << 9) | (1 << 10);
 
     // Enable uart4, receive & transfer part of UART.                  
-	*(uart4 + UART_CR) = (1 << 0) | (1 << 8) | (1 << 9);
+	*(uart0 + UART_CR) = (1 << 0) | (1 << 8) | (1 << 9);
 }
 
 void uart_send_char(unsigned char data)
 {
-    while (*(uart4 + UART_FR) & (1 << 5)); // Wait until there is room for new data in Transmission fifo
-    *(uart4 + UART_DR) = (unsigned char) data; // Write data in transmission fifo
+    while (*(uart0 + UART_FR) & (1 << 5)); // Wait until there is room for new data in Transmission fifo
+    *(uart0 + UART_DR) = (unsigned char) data; // Write data in transmission fifo
     delay_us(150);
 }
 
 char uart_receive()
 {
-    while (!(*(uart4 + UART_FR) & (1 << 4))); // Wait until data arrives in Rx fifo. Bit 4 is set when RX fifo is empty
-    return (unsigned char) *(uart4 + UART_DR);
+    while ((*(uart0 + UART_FR) & (1 << 4))); // Wait until data arrives in Rx fifo. Bit 4 is set when RX fifo is empty
+    return (unsigned char) *(uart0 + UART_DR);
 }
 
 void uart_send_string(const char *data)
@@ -566,13 +566,155 @@ void aux_uart_send_string(const char *data)
 
 //-----------I2C-------------//
 
+static int i2c_wait = 0;  // us
+
 void i2c_setup()
 {
-    pinMode(2, ALT0);   // PIN 2 IS SDA
-    pinMode(3, ALT0);   // PIN 2 IS SCL
+    pinMode(2, ALT0);   // PIN 2 IS SDA -I2C1
+    pinMode(3, ALT0);   // PIN 2 IS SCL -I2C1
+
+    uint16_t div = *(i2c1 + BSC_DIV);
+
+    i2c_wait = ((float)div / CORE_CLK_HZ) * 1000000 * 9;
 }
 
+void i2c_start()
+{
+    pinMode(2, ALT0);   // PIN 2 IS SDA -I2C1
+    pinMode(3, ALT0);   // PIN 2 IS SCL -I2C1
+}
 
+void i2c_end()
+{
+    pinMode(2, INPUT);      // MODE INPUT   
+    pinMode(3, INPUT);      // MODE INPUT   
+}
+
+void i2c_set_slave_address(uint8_t addr)
+{
+    *(i2c1 + BSC_A) = addr;
+}
+
+void i2c_set_clock_divider(uint16_t div)
+{
+    *(i2c1 + BSC_DIV) = div;
+    i2c_wait = ((float)div / CORE_CLK_HZ) * 1000000 * 9;
+}
+
+void i2c_set_baudrate(uint32_t baudrate)
+{
+    uint32_t div = (CORE_CLK_HZ / baudrate) & 0xFFFE;
+    i2c_set_clock_divider((uint16_t) div);
+}
+
+uint8_t i2c_write(const char *data, int len)
+{
+    /* Clear FIFO */
+    *(i2c1 + BSC_C) = 1 << 4 | 1 << 5;
+    /* Clear Status */
+    *(i2c1 + BSC_S) = 1 << 9 | 1 << 8 | 1 << 1;
+    /* Set Data Length */
+    *(i2c1 + BSC_DLEN) = len;
+
+    int _len = len;
+    int i = 0;
+
+    while( _len && ( i < 16 ) )
+    {
+        *(i2c1 + BSC_FIFO) = data[i];
+        i++;
+        _len--;
+    }
+
+    // Enable device and start transfer
+    *(i2c1 + BSC_C) = 1 << 15 | 1 << 7;
+
+    i = 0;
+    _len = len;
+    while(!( *(i2c1 + BSC_S) & 1 << 1 ))
+    {
+        while ( _len && (*(i2c1 + BSC_S) & 1 << 4 ))
+    	{
+	    /* Write to FIFO */
+	        *(i2c1 + BSC_FIFO) = data[i];
+	        i++;
+	        _len--;
+    	}
+    }
+
+    /* Received a NACK */
+
+    int ret = 0;
+
+    if ( *(i2c1 + BSC_S) & 1 << 8 ) { ret = 1; }
+
+    /* Received Clock Stretch Timeout */
+    else if ( *(i2c1 + BSC_S) & 1 << 9 ) { ret = 2; }
+
+    /* Not all data is sent */
+    else if (_len) { ret = 3; }
+
+    *(i2c1 + BSC_C) = 1 << 1;
+
+    return ret;
+}
+
+uint8_t i2c_read(char* data, int len)
+{
+    /* Clear FIFO */
+    *(i2c1 + BSC_C) = 1 << 4 | 1 << 5;
+    /* Clear Status */
+    *(i2c1 + BSC_C) = 1 << 9 | 1 << 8 | 1 << 1;
+    /* Set Data Length */
+    *(i2c1 + BSC_DLEN) = len;
+    /* Start read */
+    *(i2c1 + BSC_C) = 1 << 15 | 1 << 7 | 1 << 0;
+
+    int _len = len;
+    int i = 0;
+
+    /* wait for transfer to complete */
+    while (!( *(i2c1 + BSC_S) & 1 << 5 ))
+    {
+        /* we must empty the FIFO as it is populated and not use any delay */
+        while ( _len && (*(i2c1 + BSC_S) & 1 << 5) )
+    	{
+	    /* Read from FIFO, no barrier */
+	        data[i] = *(i2c1 + BSC_FIFO);
+	        i++;
+	        _len--;
+    	}
+    }
+
+    _len = len;
+    i = 0;
+
+    /* transfer has finished - grab any remaining stuff in FIFO */
+    while ( _len && (*(i2c1 + BSC_S) & 1 << 5))
+    {
+        /* Read from FIFO, no barrier */
+        data[i] = *(i2c1 + BSC_FIFO);
+        i++;
+        _len--;
+    }
+
+    /* Received a NACK */
+
+    int ret = 0;
+
+    if (*(i2c1 + BSC_S) & 1 << 8){ ret = 1; }
+
+    /* Received Clock Stretch Timeout */
+    else if (*(i2c1 + BSC_S) & 1 << 9) { ret = 2; }
+
+    /* Not all data is received */
+    else if (_len) { ret = 3; }
+
+    *(i2c1 + BSC_S) = 1 << 1;
+
+    return ret;
+
+}
 
 
 

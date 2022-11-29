@@ -87,3 +87,17 @@ init_uart_clock=3000000
 enable_uart=1
 core_freq=500
 dtoverlay=w1-gpio
+
+#//use AUX UART
+#dtoverlay=miniuart-bt  
+#console=tty1
+
+#USE PL011
+dtoverlay=disable-bt
+dtoverlay=uart0
+dtoverlay=uart1
+dtoverlay=uart2
+dtoverlay=uart3
+dtoverlay=uart4
+dtoverlay=uart5
+

@@ -256,9 +256,16 @@ void aux_uart_send_string(const char *data);
 #define BSC_DEL         (0x18/4)
 #define BSC_CLKT        (0x1C/4)
 
+#define CORE_CLK_HZ     25000000
+
 void i2c_setup();
-
-
+void i2c_start();
+void i2c_end();
+void i2c_set_slave_address(uint8_t addr);
+void i2c_set_clock_divider(uint16_t div);
+void i2c_set_baudrate(uint32_t baudrate);
+uint8_t i2c_write(const char *data, int len);
+uint8_t i2c_read(char *data, int len);
 
 
 
