@@ -607,7 +607,7 @@ void i2c_set_baudrate(uint32_t baudrate)
     i2c_set_clock_divider((uint16_t) div);
 }
 
-uint8_t i2c_write(const char *data, int len)
+uint8_t i2c_write(const uint8_t *data, uint16_t len)
 {
     /* Clear FIFO */
     *(i2c1 + BSC_C) = 1 << 4 | 1 << 5;
@@ -619,15 +619,26 @@ uint8_t i2c_write(const char *data, int len)
     int _len = len;
     int i = 0;
 
-    while( _len && ( i < 16 ) )
+    // Enable device and start transfer
+    *(i2c1 + BSC_C) = 1 << 15 | 1 << 7;
+
+    while(!( *(i2c1 + BSC_S) & 1 << 1 ))
+    {
+        while ( _len > 0 && (*(i2c1 + BSC_S) & 1 << 4 ) > 0)
+    	{
+	        *(i2c1 + BSC_FIFO) = data[i];
+	        i++;
+	        _len--;
+    	}
+    }
+    
+/*
+    while( (_len >0) && ( i < 16 ) )
     {
         *(i2c1 + BSC_FIFO) = data[i];
         i++;
         _len--;
     }
-
-    // Enable device and start transfer
-    *(i2c1 + BSC_C) = 1 << 15 | 1 << 7;
 
     i = 0;
     _len = len;
@@ -635,13 +646,12 @@ uint8_t i2c_write(const char *data, int len)
     {
         while ( _len && (*(i2c1 + BSC_S) & 1 << 4 ))
     	{
-	    /* Write to FIFO */
 	        *(i2c1 + BSC_FIFO) = data[i];
 	        i++;
 	        _len--;
     	}
     }
-
+*/
     /* Received a NACK */
 
     int ret = 0;
