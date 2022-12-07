@@ -10,13 +10,13 @@
 #include "lib.h"
 
 // Convert Decimal to Binary Coded Decimal (BCD)
-uint8_t ds1307_dec2bcd(uint8_t num)
+char ds1307_dec2bcd(uint8_t num)
 {
   return ((num/10 * 16) + (num % 10));
 }
 
 // Convert Binary Coded Decimal (BCD) to Decimal
-uint8_t ds1307_bcd2dec(uint8_t num)
+int ds1307_bcd2dec(uint8_t num)
 {
   return ((num/16 * 10) + (num % 16));
 }

@@ -607,7 +607,9 @@ void i2c_set_baudrate(uint32_t baudrate)
     i2c_set_clock_divider((uint16_t) div);
 }
 
-uint8_t i2c_write(const uint8_t *data, uint16_t len)
+
+
+uint8_t i2c_write(const uint8_t *data, int len)
 {
     /* Clear FIFO */
     *(i2c1 + BSC_C) = 1 << 4 | 1 << 5;
@@ -617,41 +619,19 @@ uint8_t i2c_write(const uint8_t *data, uint16_t len)
     *(i2c1 + BSC_DLEN) = len;
 
     int _len = len;
-    int i = 0;
 
     // Enable device and start transfer
-    *(i2c1 + BSC_C) = 1 << 15 | 1 << 7;
+    *(i2c1 + BSC_C) = 1 << 15 | 1 << 7 | 0 << 0;
 
     while(!( *(i2c1 + BSC_S) & 1 << 1 ))
     {
         while ( _len > 0 && (*(i2c1 + BSC_S) & 1 << 4 ) > 0)
     	{
-	        *(i2c1 + BSC_FIFO) = data[i];
-	        i++;
+	        *(i2c1 + BSC_FIFO) = *data++;
 	        _len--;
     	}
     }
     
-/*
-    while( (_len >0) && ( i < 16 ) )
-    {
-        *(i2c1 + BSC_FIFO) = data[i];
-        i++;
-        _len--;
-    }
-
-    i = 0;
-    _len = len;
-    while(!( *(i2c1 + BSC_S) & 1 << 1 ))
-    {
-        while ( _len && (*(i2c1 + BSC_S) & 1 << 4 ))
-    	{
-	        *(i2c1 + BSC_FIFO) = data[i];
-	        i++;
-	        _len--;
-    	}
-    }
-*/
     /* Received a NACK */
 
     int ret = 0;
@@ -669,43 +649,26 @@ uint8_t i2c_write(const uint8_t *data, uint16_t len)
     return ret;
 }
 
-uint8_t i2c_read(char* data, int len)
+uint8_t i2c_read(uint8_t *data, int len)
 {
     /* Clear FIFO */
     *(i2c1 + BSC_C) = 1 << 4 | 1 << 5;
     /* Clear Status */
-    *(i2c1 + BSC_C) = 1 << 9 | 1 << 8 | 1 << 1;
+    *(i2c1 + BSC_S) = 1 << 9 | 1 << 8 | 1 << 1;
     /* Set Data Length */
     *(i2c1 + BSC_DLEN) = len;
     /* Start read */
     *(i2c1 + BSC_C) = 1 << 15 | 1 << 7 | 1 << 0;
 
     int _len = len;
-    int i = 0;
+    int i=0;
 
-    /* wait for transfer to complete */
-    while (!( *(i2c1 + BSC_S) & 1 << 5 ))
-    {
-        /* we must empty the FIFO as it is populated and not use any delay */
-        while ( _len && (*(i2c1 + BSC_S) & 1 << 5) )
-    	{
-	    /* Read from FIFO, no barrier */
-	        data[i] = *(i2c1 + BSC_FIFO);
-	        i++;
-	        _len--;
-    	}
-    }
-
-    _len = len;
-    i = 0;
-
-    /* transfer has finished - grab any remaining stuff in FIFO */
-    while ( _len && (*(i2c1 + BSC_S) & 1 << 5))
-    {
-        /* Read from FIFO, no barrier */
-        data[i] = *(i2c1 + BSC_FIFO);
-        i++;
-        _len--;
+    while(!( *(i2c1 + BSC_S) & 1 << 1 )) {
+        while( (*(i2c1 + BSC_S) & 1 << 5) > 0 && _len > 0) {
+            data[i] = *(i2c1 + BSC_FIFO) & 0xFF;
+            i++;
+            _len--;
+        }
     }
 
     /* Received a NACK */
@@ -726,7 +689,20 @@ uint8_t i2c_read(char* data, int len)
 
 }
 
-
+void i2c_send(uint8_t addr, const uint8_t *data, int len)
+{
+    i2c_start();
+    i2c_set_slave_address(addr);
+    i2c_write( data, len);
+    i2c_end();
+}
+void i2c_receive(uint8_t addr, uint8_t *data, int len)
+{
+    i2c_start();
+    i2c_set_slave_address(addr);
+    i2c_read( data, len);
+    i2c_end(); 
+}
 
 
 

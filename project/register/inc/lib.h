@@ -264,8 +264,12 @@ void i2c_end();
 void i2c_set_slave_address(uint8_t addr);
 void i2c_set_clock_divider(uint16_t div);
 void i2c_set_baudrate(uint32_t baudrate);
-uint8_t i2c_write(const uint8_t *data, uint16_t len);
-uint8_t i2c_read(char *data, int len);
+uint8_t i2c_write(const uint8_t *data, int len);
+uint8_t i2c_read(uint8_t *data, int len);
+
+void i2c_send(uint8_t addr, const uint8_t *data, int len);
+void i2c_receive(uint8_t addr, uint8_t *data, int len);
+
 
 #endif
 
