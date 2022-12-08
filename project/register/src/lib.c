@@ -30,6 +30,12 @@ static volatile uint32_t *i2c4 ;
 static volatile uint32_t *i2c5 ;
 static volatile uint32_t *i2c6 ;
 
+static volatile uint32_t *spi0 ;
+static volatile uint32_t *spi3 ;
+static volatile uint32_t *spi4 ;
+static volatile uint32_t *spi5 ;
+static volatile uint32_t *spi6 ;
+
 static volatile uint32_t reg_pwm;
 
 // gpio_GPFSEL:
@@ -149,21 +155,32 @@ void lib_init(){
         printf("mmap gpio failed: %s\n", strerror(errno));  
         
     gpio = base + GPIO_REG;
+
     clk = base + CLK_REG;
+
     pwm = base + PWM0_REG;
+
     timer = base + TIMER_REG;
     uart0 = base + UART0_REG;
     uart2 = base + UART2_REG;
     uart3 = base + UART3_REG;
     uart4 = base + UART4_REG;
     uart5 = base + UART5_REG;
+
     aux = base + AUX_REG;
+
     i2c0 = base + BSC0_REG;
     i2c1 = base + BSC1_REG;
     i2c3 = base + BSC3_REG;
     i2c4 = base + BSC4_REG;
     i2c5 = base + BSC5_REG;
     i2c6 = base + BSC6_REG;
+
+    spi0 = base + SPI0_REG;
+    spi3 = base + SPI3_REG;
+    spi4 = base + SPI4_REG;
+    spi5 = base + SPI5_REG;
+    spi6 = base + SPI6_REG;
 
     //pthread_t threadId ;
     //pthread_create (&threadId, NULL, thr, NULL);
@@ -172,20 +189,31 @@ void lib_init(){
 
 void lib_close(){
     munmap(&base, BLOCK_SIZE);
+
     gpio = MAP_FAILED;
+
     timer = MAP_FAILED;
+
     aux = MAP_FAILED;
+
     uart0 = MAP_FAILED;
     uart2 = MAP_FAILED;
     uart3 = MAP_FAILED;
     uart4 = MAP_FAILED;
     uart5 = MAP_FAILED;
+
     i2c0 = MAP_FAILED;
     i2c1 = MAP_FAILED;
     i2c3 = MAP_FAILED;
     i2c4 = MAP_FAILED;
     i2c5 = MAP_FAILED;
     i2c6 = MAP_FAILED;
+
+    spi0 = MAP_FAILED;
+    spi3 = MAP_FAILED;
+    spi4 = MAP_FAILED;
+    spi5 = MAP_FAILED;
+    spi6 = MAP_FAILED;
 }
 
 
@@ -458,7 +486,7 @@ void pwm_off(uint8_t pin)
 //----------UART----------//
 
 // uart0
-void uart_setup(unsigned long baud)
+void uart_init(unsigned long baud)
 {
     // Disable pull up/down for pin 14,15 & delay for 150 cycles.
     pinMode(14, ALT0);
@@ -496,6 +524,12 @@ void uart_setup(unsigned long baud)
 	*(uart0 + UART_CR) = (1 << 0) | (1 << 8) | (1 << 9);
 }
 
+void uart_deinit()
+{
+    pinMode(14, INPUT);
+    pinMode(15, INPUT);
+}
+
 void uart_send_char(unsigned char data)
 {
     while (*(uart0 + UART_FR) & (1 << 5)); // Wait until there is room for new data in Transmission fifo
@@ -519,7 +553,7 @@ void uart_send_string(const char *data)
 }
 
 
-void aux_uart_setup(long baud)
+void aux_uart_init(long baud)
 {
         /* set gpio 14 and 15 to UART1 (mini-uart) */
     pinMode(14, ALT5);
@@ -539,6 +573,12 @@ void aux_uart_setup(long baud)
     *(aux + AUX_MU_BAUD_REG) = (500000000/(8*(baud + 1)));
     /* enable TX and RX */
     *(aux + AUX_MU_CNTL_REG) = 1<<0 | 1<<1;
+}
+
+void aux_uart_deinit()
+{
+    pinMode(14, INPUT);
+    pinMode(15, INPUT);
 }
 
 void aux_uart_send_char(char data)
@@ -568,7 +608,7 @@ void aux_uart_send_string(const char *data)
 
 static int i2c_wait = 0;  // us
 
-void i2c_setup()
+void i2c_init()
 {
     pinMode(2, ALT0);   // PIN 2 IS SDA -I2C1
     pinMode(3, ALT0);   // PIN 2 IS SCL -I2C1
@@ -576,6 +616,12 @@ void i2c_setup()
     uint16_t div = *(i2c1 + BSC_DIV);
 
     i2c_wait = ((float)div / CORE_CLK_HZ) * 1000000 * 9;
+}
+
+void i2c_deinit()
+{
+    pinMode(2, INPUT);   // PIN 2 IS SDA -I2C1
+    pinMode(3, INPUT);   // PIN 2 IS SCL -I2C1
 }
 
 void i2c_start()
@@ -704,8 +750,74 @@ void i2c_receive(uint8_t addr, uint8_t *data, int len)
     i2c_end(); 
 }
 
+//-----------SPI-----------//
 
+void spi_init() 
+{
+    pinMode(7, ALT0); //CS1
+    pinMode(8, ALT0); //CS0  -> CS  (red)
+    pinMode(9, ALT0); //MISO 
+    pinMode(10, ALT0);//MOSI -> DIN (brown)
+    pinMode(11, ALT0);//SCLK -> CLK (orange)
+}
 
+void spi_deinit()
+{
+    pinMode(7, INPUT); //CS1
+    pinMode(8, INPUT); //CS0  -> CS  (red)
+    pinMode(9, INPUT); //MISO 
+    pinMode(10, INPUT);//MOSI -> DIN (brown)
+    pinMode(11, INPUT);//SCLK -> CLK (orange)
+} 
+
+void spi_send_receive(uint8_t chip_select, uint8_t *sbuffer, uint8_t *rbuffer, uint8_t size) 
+{
+    *(spi0 + SPI_DLEN) = size;
+    *(spi0 + SPI_CS) = 0 << 0 | 0 << 1;
+    *(spi0 + SPI_CS) = chip_select << 0 | 1 << 17 | 1 << 18 | 1 << 7;
+    
+    uint32_t read_count = 0;
+    uint32_t write_count = 0;
+
+    while(read_count < size || write_count < size) {
+        while(write_count < size && (*(spi0 + SPI_CS) & (1 << 18)) > 0 ) {
+            if (sbuffer) {
+                *(spi0 + SPI_FIFO) = *sbuffer++;
+            } else {
+                *(spi0 + SPI_FIFO) = 0;
+            }
+
+            write_count++;
+        }
+
+        while(read_count < size && (*(spi0 + SPI_CS) & (1 << 17)) > 0) {
+            if (rbuffer) {
+                *rbuffer++ = *(spi0 + SPI_FIFO);
+            }
+
+            read_count++;
+        }
+    }
+
+    while(!(*(spi0 + SPI_CS) & (1 << 16))) {
+        while(*(spi0 + SPI_CS) & (1 << 17)) {
+            uint32_t r = *(spi0 + SPI_FIFO);
+            printf("Left Over: %d \n", r);
+        }
+    }
+
+    *(spi0 + SPI_CS) = (*(spi0 + SPI_CS) & (0 << 7));
+}
+
+void spi_send(uint8_t chip_select, uint8_t *data, uint32_t size) 
+{
+    spi_send_receive(chip_select, data, 0, size);
+}
+
+void spi_receive(uint8_t chip_select, uint8_t *data, uint32_t size) 
+{
+    spi_send_receive(chip_select, 0, data, size);
+}
 
 
 

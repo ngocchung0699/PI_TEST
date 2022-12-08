@@ -208,7 +208,8 @@ void pwm_off(uint8_t pin);
 #define UART_TDR                    (0x8C/4)
 
 
-void uart_setup(unsigned long baud);
+void uart_init(unsigned long baud);
+void uart_deinit();
 void uart_send_char(unsigned char data);
 char uart_receive();
 void uart_send_string(const char *data);
@@ -231,11 +232,11 @@ void uart_send_string(const char *data);
 #define AUX_MU_STAT_REG     (0x64/4)
 #define AUX_MU_BAUD_REG     (0x68/4)
 
-void aux_uart_setup(long baud);
+void aux_uart_init(long baud);
+void aux_uart_deinit();
 char aux_uart_receive();
 void aux_uart_send_char(char data);
 void aux_uart_send_string(const char *data);
-
 
 //-----------I2C-------------//
 
@@ -258,7 +259,8 @@ void aux_uart_send_string(const char *data);
 
 #define CORE_CLK_HZ     25000000
 
-void i2c_setup();
+void i2c_init();
+void i2c_deinit();
 void i2c_start();
 void i2c_end();
 void i2c_set_slave_address(uint8_t addr);
@@ -270,6 +272,29 @@ uint8_t i2c_read(uint8_t *data, int len);
 void i2c_send(uint8_t addr, const uint8_t *data, int len);
 void i2c_receive(uint8_t addr, uint8_t *data, int len);
 
+
+//-----------SPI------------//
+
+#define SPI0_REG  (0x204000/4)
+//   SPI1 - use for AUX
+//   SPI2 - use for AUX
+#define SPI3_REG  (0x204600/4)
+#define SPI4_REG  (0x204800/4)
+#define SPI5_REG  (0x204a00/4)
+#define SPI6_REG  (0x204c00/4)
+
+#define SPI_CS (0x00/4)
+#define SPI_FIFO (0x04/4)
+#define SPI_CLK (0x08/4)
+#define SPI_DLEN (0x0c/4)
+#define SPI_LTOH (0x10/4)
+#define SPI_OC (0x14/4)
+
+void spi_init();
+void spi_deinit();
+void spi_send_receive(uint8_t chip_select, uint8_t *sbuffer, uint8_t *rbuffer, uint8_t size);
+void spi_send(uint8_t chip_select, uint8_t *data, uint32_t size);
+void spi_receive(uint8_t chip_select, uint8_t *data, uint32_t size); 
 
 #endif
 
