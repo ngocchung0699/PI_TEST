@@ -8,28 +8,22 @@
 #include <time.h>
 #include <stdint.h>
 #include "lib.h"
-#include "i2c_lcd.h"
+#include "led_bar.h"
 
 int main() 
 {   
     lib_init();
-    i2c_init();
-    LCD_Init();
 
+    pinMode(pin_clock, OUTPUT);
+    pinMode(pin_data, OUTPUT);
 
     while (1)
     {   
-        LCD_Clear();
-        LCD_SendChar(1, 1, "hello", 5);
-        delay_ms(500);
-
-        LCD_Clear();
-        LCD_SendInt(0, 2, 1234567);
-        delay_ms(500);
-
-        LCD_Clear();
-        LCD_SendFloat(0, 3, 123.4564, 3);
-        delay_ms(500);
+        for(int i = 1; i <= 10; i++)
+        {
+            set_led(i, 1);
+            delay_ms(200);
+        }
     }
     lib_close();
     return (EXIT_SUCCESS);

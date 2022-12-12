@@ -296,9 +296,12 @@ void spi_send_receive(uint8_t chip_select, uint8_t *sbuffer, uint8_t *rbuffer, u
 void spi_send(uint8_t chip_select, uint8_t *data, uint32_t size);
 void spi_receive(uint8_t chip_select, uint8_t *data, uint32_t size); 
 
+
+//------------FUNCTION-----------//
+double map(double x, double in_min, double in_max, double out_min, double out_max);
+
 #endif
 
 
-//------------FUNCTION-----------//
-float map(float x, float in_min, float in_max, float out_min, float out_max);
+
 
