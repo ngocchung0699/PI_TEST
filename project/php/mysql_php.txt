@@ -1,0 +1,31 @@
+<?php
+$servername = "localhost";
+$username = "datauser";
+$password = "123457890";
+$dbname = "datadb";
+
+// tạo kết nối
+$conn = mysqli_connect($servername, $username, $password, $dbname);
+// kiểm kết nối
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+
+$sql = "SELECT id, hoten, lop FROM dataTable";
+$result = $conn->query($sql);
+
+if ($result->num_rows > 0) 
+{
+    // Load dữ liệu lên website
+    while($row = $result->fetch_assoc()) 
+    {
+        echo "id: " . $row["id"]. " - Họ Tên: " . $row["hoten"]." - Lớp: ". $row["lop"] . "<br>";
+    }
+        
+} 
+else 
+{
+    echo "0 results";
+}
+$conn->close();
+?>
