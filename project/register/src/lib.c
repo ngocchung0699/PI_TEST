@@ -168,6 +168,8 @@ void lib_init(){
     timer = base + TIMER_REG;
     
     uart0 = base + UART0_REG;
+    #define UART0 ((UART_TypeDef*) uart0)
+    
     uart2 = base + UART2_REG;
     uart3 = base + UART3_REG;
     uart4 = base + UART4_REG;
@@ -186,6 +188,7 @@ void lib_init(){
     spi5 = base + SPI5_REG;
     spi6 = base + SPI6_REG;
 
+    #define abc 1
     //pthread_t threadId ;
     //pthread_create (&threadId, NULL, thr, NULL);
     close(memfd);

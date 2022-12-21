@@ -186,6 +186,30 @@ void pwm_off(uint8_t pin);
 
 //---------UART---------//
 
+typedef struct
+{
+    __IO    uint32_t    DR;         /*!< UART Data register,                        Address offset: 0x00 */
+    __IO    uint32_t    RSRECR;     /*!<                                            Address offset: 0x04 */
+    __IO    uint32_t    temp1;      /*!< Buffer Variable                            Address offset: 0x08 */
+    __IO    uint32_t    temp2;      /*!<                                            Address offset: 0x0C */
+    __IO    uint32_t    temp3;      /*!<                                            Address offset: 0x10 */
+    __IO    uint32_t    temp4;      /*!<                                            Address offset: 0x14 */
+    __IO    uint32_t    FR;         /*!< UART Flag register,                        Address offset: 0x18 */
+    __IO    uint32_t    temp5;      /*!<                                            Address offset: 0x1C */
+    __IO    uint32_t    ILPR;       /*!< UART not in use,                           Address offset: 0x20 */
+    __IO    uint32_t    IBRD;       /*!< UART Integer Baud rate divisor,            Address offset: 0x24 */
+    __IO    uint32_t    FBRD;       /*!< UART Fractional Baud rate divisor,         Address offset: 0x28 */
+    __IO    uint32_t    LCRH;       /*!< UART Line Control register,                Address offset: 0x2C */
+    __IO    uint32_t    CR;         /*!< UART Control register,                     Address offset: 0x30 */
+    __IO    uint32_t    IFLS;       /*!< UART Interrupt FIFO Level Select Register, Address offset: 0x34 */
+    __IO    uint32_t    IMSC;       /*!< UART Interrupt Mask Set Clear Register,    Address offset: 0x38 */
+    __IO    uint32_t    RIS;        /*!< UART Raw Interrupt Status Register,        Address offset: 0x3C */
+    __IO    uint32_t    MIS;        /*!< UART Masked Interrupt Status Register,     Address offset: 0x40 */
+    __IO    uint32_t    ICR;        /*!< UART Interrupt Clear Register,             Address offset: 0x44 */
+    __IO    uint32_t    DMACR;      /*!< UART DMA Control Register,                 Address offset: 0x48 */
+} UART_TypeDef;
+
+
 #define UART0_REG                    (0x201000/4)
 #define UART2_REG                    (0x201400/4)
 #define UART3_REG                    (0x201600/4)
@@ -207,28 +231,6 @@ void pwm_off(uint8_t pin);
 #define UART_ICR                    (0x44/4)
 #define UART_DMACR                  (0x48/4)
 
-typedef struct
-{
-    __IO    uint32_t    DR;         /*!< UART Data register,                        Address offset: 0x00 */
-    __IO    uint32_t    RSRECR;     /*!<                                            Address offset: 0x04 */
-    __IO    uint32_t    temp1;      /*!<                                            Address offset: 0x08 */
-    __IO    uint32_t    temp2;      /*!<                                            Address offset: 0x0C */
-    __IO    uint32_t    temp3;      /*!<                                            Address offset: 0x10 */
-    __IO    uint32_t    temp4;      /*!<                                            Address offset: 0x14 */
-    __IO    uint32_t    FR;         /*!< UART Flag register,                        Address offset: 0x18 */
-    __IO    uint32_t    temp5;      /*!<                                            Address offset: 0x1C */
-    __IO    uint32_t    ILPR;       /*!< UART not in use,                           Address offset: 0x20 */
-    __IO    uint32_t    IBRD;       /*!< UART Integer Baud rate divisor,            Address offset: 0x24 */
-    __IO    uint32_t    FBRD;       /*!< UART Fractional Baud rate divisor,         Address offset: 0x28 */
-    __IO    uint32_t    LCRH;       /*!< UART Line Control register,                Address offset: 0x2C */
-    __IO    uint32_t    CR;         /*!< UART Control register,                     Address offset: 0x30 */
-    __IO    uint32_t    IFLS;       /*!< UART Interrupt FIFO Level Select Register, Address offset: 0x34 */
-    __IO    uint32_t    IMSC;       /*!< UART Interrupt Mask Set Clear Register,    Address offset: 0x38 */
-    __IO    uint32_t    RIS;        /*!< UART Raw Interrupt Status Register,        Address offset: 0x3C */
-    __IO    uint32_t    MIS;        /*!< UART Masked Interrupt Status Register,     Address offset: 0x40 */
-    __IO    uint32_t    ICR;        /*!< UART Interrupt Clear Register,             Address offset: 0x44 */
-    __IO    uint32_t    DMACR;      /*!< UART DMA Control Register,                 Address offset: 0x48 */
-} UART_TypeDef;
 
 
 void uart_init(unsigned long baud);
@@ -270,7 +272,6 @@ uint8_t i2c_read(uint8_t *data, int len);
 
 void i2c_send(uint8_t addr, const uint8_t *data, int len);
 void i2c_receive(uint8_t addr, uint8_t *data, int len);
-
 
 //-----------SPI------------//
 
