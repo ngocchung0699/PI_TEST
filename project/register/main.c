@@ -29,7 +29,7 @@ int main()
 {   
     lib_init();
     i2c_setup();
-  
+
     // set time
     // i2c_send(0x68, data_send, 8);
 
