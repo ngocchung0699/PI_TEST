@@ -22,8 +22,6 @@ static volatile uint32_t *pwm ;
 
 static volatile uint32_t *timer ;
 
-static volatile uint32_t *aux ;
-
 static volatile uint32_t *uart0 ;
 static volatile uint32_t *uart2 ;
 static volatile uint32_t *uart3 ;
@@ -51,12 +49,12 @@ static volatile uint32_t reg_pwm;
 //	Groups of 10 - 3 bits per Function - 30 bits per port
 static uint8_t GPIO_GPFSEL [] =
 {
-  GPFSEL0,GPFSEL0,GPFSEL0,GPFSEL0,GPFSEL0,GPFSEL0,GPFSEL0,GPFSEL0,GPFSEL0,GPFSEL0,
-  GPFSEL1,GPFSEL1,GPFSEL1,GPFSEL1,GPFSEL1,GPFSEL1,GPFSEL1,GPFSEL1,GPFSEL1,GPFSEL1,
-  GPFSEL2,GPFSEL2,GPFSEL2,GPFSEL2,GPFSEL2,GPFSEL2,GPFSEL2,GPFSEL2,GPFSEL2,GPFSEL2,
-  GPFSEL3,GPFSEL3,GPFSEL3,GPFSEL3,GPFSEL3,GPFSEL3,GPFSEL3,GPFSEL3,GPFSEL3,GPFSEL3,
-  GPFSEL4,GPFSEL4,GPFSEL4,GPFSEL4,GPFSEL4,GPFSEL4,GPFSEL4,GPFSEL4,GPFSEL4,GPFSEL4,
-  GPFSEL5,GPFSEL5,GPFSEL5,GPFSEL5,GPFSEL5,GPFSEL5,GPFSEL5,GPFSEL5,GPFSEL5,GPFSEL5
+    GPFSEL0, GPFSEL0, GPFSEL0, GPFSEL0, GPFSEL0, GPFSEL0, GPFSEL0, GPFSEL0, GPFSEL0, GPFSEL0, 
+    GPFSEL1, GPFSEL1, GPFSEL1, GPFSEL1, GPFSEL1, GPFSEL1, GPFSEL1, GPFSEL1, GPFSEL1, GPFSEL1, 
+    GPFSEL2, GPFSEL2, GPFSEL2, GPFSEL2, GPFSEL2, GPFSEL2, GPFSEL2, GPFSEL2, GPFSEL2, GPFSEL2, 
+    GPFSEL3, GPFSEL3, GPFSEL3, GPFSEL3, GPFSEL3, GPFSEL3, GPFSEL3, GPFSEL3, GPFSEL3, GPFSEL3, 
+    GPFSEL4, GPFSEL4, GPFSEL4, GPFSEL4, GPFSEL4, GPFSEL4, GPFSEL4, GPFSEL4, GPFSEL4, GPFSEL4, 
+    GPFSEL5, GPFSEL5, GPFSEL5, GPFSEL5, GPFSEL5, GPFSEL5, GPFSEL5, GPFSEL5, GPFSEL5, GPFSEL5
 } ;
 
 
@@ -64,38 +62,38 @@ static uint8_t GPIO_GPFSEL [] =
 //	Define the shift up for the 3 bits per pin in each GPFSEL port
 static uint8_t GPIO_SHIFT [] =
 {
-    0,3,6,9,12,15,18,21,24,27,
-    0,3,6,9,12,15,18,21,24,27,
-    0,3,6,9,12,15,18,21,24,27,
-    0,3,6,9,12,15,18,21,24,27,  
-    0,3,6,9,12,15,18,21,24,27,
-    0,3,6,9,12,15,18,21,24,27
+    0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 
+    0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 
+    0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 
+    0, 3, 6, 9, 12, 15, 18, 21, 24, 27,   
+    0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 
+    0, 3, 6, 9, 12, 15, 18, 21, 24, 27
 } ;
 
 // gpioToGPSET:
 //	(Word) offset to the GPIO Set registers for each GPIO pin
 static uint8_t GPIO_GPSET [] =
 {
-    GPSET0, GPSET0, GPSET0, GPSET0, GPSET0, GPSET0, GPSET0, GPSET0, 
-    GPSET0, GPSET0, GPSET0, GPSET0, GPSET0, GPSET0, GPSET0, GPSET0, 
-    GPSET0, GPSET0, GPSET0, GPSET0, GPSET0, GPSET0, GPSET0, GPSET0, 
-    GPSET0, GPSET0, GPSET0, GPSET0, GPSET0, GPSET0, GPSET0, GPSET0,
-    GPSET1, GPSET1, GPSET1, GPSET1, GPSET1, GPSET1, GPSET1, GPSET1, 
-    GPSET1, GPSET1, GPSET1, GPSET1, GPSET1, GPSET1, GPSET1, GPSET1, 
-    GPSET1, GPSET1, GPSET1, GPSET1, GPSET1, GPSET1, GPSET1, GPSET1, 
-    GPSET1, GPSET1, GPSET1, GPSET1, GPSET1, GPSET1, GPSET1, GPSET1
+    GPSET0,  GPSET0,  GPSET0,  GPSET0,  GPSET0,  GPSET0,  GPSET0,  GPSET0,  
+    GPSET0,  GPSET0,  GPSET0,  GPSET0,  GPSET0,  GPSET0,  GPSET0,  GPSET0,  
+    GPSET0,  GPSET0,  GPSET0,  GPSET0,  GPSET0,  GPSET0,  GPSET0,  GPSET0,  
+    GPSET0,  GPSET0,  GPSET0,  GPSET0,  GPSET0,  GPSET0,  GPSET0,  GPSET0, 
+    GPSET1,  GPSET1,  GPSET1,  GPSET1,  GPSET1,  GPSET1,  GPSET1,  GPSET1,  
+    GPSET1,  GPSET1,  GPSET1,  GPSET1,  GPSET1,  GPSET1,  GPSET1,  GPSET1,  
+    GPSET1,  GPSET1,  GPSET1,  GPSET1,  GPSET1,  GPSET1,  GPSET1,  GPSET1,  
+    GPSET1,  GPSET1,  GPSET1,  GPSET1,  GPSET1,  GPSET1,  GPSET1,  GPSET1
 } ;
 
 static uint8_t GPIO_GPCLR [] =
 {
-  GPCLR0,GPCLR0,GPCLR0,GPCLR0,GPCLR0,GPCLR0,GPCLR0,GPCLR0,
-  GPCLR0,GPCLR0,GPCLR0,GPCLR0,GPCLR0,GPCLR0,GPCLR0,GPCLR0,
-  GPCLR0,GPCLR0,GPCLR0,GPCLR0,GPCLR0,GPCLR0,GPCLR0,GPCLR0,
-  GPCLR0,GPCLR0,GPCLR0,GPCLR0,GPCLR0,GPCLR0,GPCLR0,GPCLR0,
-  GPCLR1,GPCLR1,GPCLR1,GPCLR1,GPCLR1,GPCLR1,GPCLR1,GPCLR1,
-  GPCLR1,GPCLR1,GPCLR1,GPCLR1,GPCLR1,GPCLR1,GPCLR1,GPCLR1,
-  GPCLR1,GPCLR1,GPCLR1,GPCLR1,GPCLR1,GPCLR1,GPCLR1,GPCLR1,
-  GPCLR1,GPCLR1,GPCLR1,GPCLR1,GPCLR1,GPCLR1,GPCLR1,GPCLR1
+  GPCLR0, GPCLR0, GPCLR0, GPCLR0, GPCLR0, GPCLR0, GPCLR0, GPCLR0, 
+  GPCLR0, GPCLR0, GPCLR0, GPCLR0, GPCLR0, GPCLR0, GPCLR0, GPCLR0, 
+  GPCLR0, GPCLR0, GPCLR0, GPCLR0, GPCLR0, GPCLR0, GPCLR0, GPCLR0, 
+  GPCLR0, GPCLR0, GPCLR0, GPCLR0, GPCLR0, GPCLR0, GPCLR0, GPCLR0, 
+  GPCLR1, GPCLR1, GPCLR1, GPCLR1, GPCLR1, GPCLR1, GPCLR1, GPCLR1, 
+  GPCLR1, GPCLR1, GPCLR1, GPCLR1, GPCLR1, GPCLR1, GPCLR1, GPCLR1, 
+  GPCLR1, GPCLR1, GPCLR1, GPCLR1, GPCLR1, GPCLR1, GPCLR1, GPCLR1, 
+  GPCLR1, GPCLR1, GPCLR1, GPCLR1, GPCLR1, GPCLR1, GPCLR1, GPCLR1
 } ;
 
 // gpioToGPLEV:
@@ -175,8 +173,6 @@ void lib_init(){
     uart4 = base + UART4_REG;
     uart5 = base + UART5_REG;
 
-    aux = base + AUX_REG;
-
     i2c0 = base + BSC0_REG;
     i2c1 = base + BSC1_REG;
     i2c3 = base + BSC3_REG;
@@ -201,8 +197,6 @@ void lib_close(){
     gpio = MAP_FAILED;
 
     timer = MAP_FAILED;
-
-    aux = MAP_FAILED;
 
     uart0 = MAP_FAILED;
     uart2 = MAP_FAILED;
@@ -559,58 +553,6 @@ void uart_send_string(const char *data)
     }
     delay_us(150);
 }
-
-
-void aux_uart_init(long baud)
-{
-        /* set gpio 14 and 15 to UART1 (mini-uart) */
-    pinMode(14, ALT5);
-    pinMode(15, ALT5);
-
-    /* enable mini-uart */
-    *(aux + AUX_ENABLES) = 1 << 0;
-    /* disable TX and RX and auto flow control */
-    *(aux + AUX_MU_CNTL_REG) = 0;
-    /* enable receive interrupts, check bcm errata */
-    *(aux + AUX_MU_IER_REG) = 0<<0 | 0<<1;
-    /* set 8-bit mode */
-    *(aux + AUX_MU_LCR_REG) = 0<<0 ;
-    /* set RTS to always high */
-    *(aux + AUX_MU_MCR_REG) = 0<<0;
-    /* 115200 @ 500 MHz */
-    *(aux + AUX_MU_BAUD_REG) = (500000000/(8*(baud + 1)));
-    /* enable TX and RX */
-    *(aux + AUX_MU_CNTL_REG) = 1<<0 | 1<<1;
-}
-
-void aux_uart_deinit()
-{
-    pinMode(14, INPUT);
-    pinMode(15, INPUT);
-}
-
-void aux_uart_send_char(char data)
-{
-    /* keep looping if the 5th bit is 0 */
-    while (!(*(aux + AUX_MU_LSR_REG) & 0x20));
-
-    *(aux + AUX_MU_IO_REG) = data;
-}
-
-char aux_uart_receive()
-{
-    while (!(*(aux + AUX_MU_LSR_REG) & 0x01));
-
-    return *(aux + AUX_MU_IO_REG) & 0xFF;
-}
-void aux_uart_send_string(const char *data)
-{
-    for(int i=0; data[i] != '\0';i++)
-    {
-        aux_uart_send_char(data[i]);
-    }
-}
-
 
 //-----------I2C-------------//
 
