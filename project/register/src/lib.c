@@ -707,6 +707,7 @@ void spi_init()
     pinMode(9, ALT0); //MISO 
     pinMode(10, ALT0);//MOSI -> DIN (brown)
     pinMode(11, ALT0);//SCLK -> CLK (orange)
+    *(spi0 + SPI_CLK) = 250000000/250000;
 }
 
 void spi_deinit()
@@ -747,12 +748,12 @@ void spi_send_receive(uint8_t chip_select, uint8_t *sbuffer, uint8_t *rbuffer, u
         }
     }
 
-    while(!(*(spi0 + SPI_CS) & (1 << 16))) {
-        while(*(spi0 + SPI_CS) & (1 << 17)) {
-            uint32_t r = *(spi0 + SPI_FIFO);
-            printf("Left Over: %d \n", r);
-        }
-    }
+    // while(!(*(spi0 + SPI_CS) & (1 << 16))) {
+    //     while(*(spi0 + SPI_CS) & (1 << 17)) {
+    //         uint32_t r = *(spi0 + SPI_FIFO);
+    //         printf("Left Over: %d \n", r);
+    //     }
+    // }
 
     *(spi0 + SPI_CS) = (*(spi0 + SPI_CS) & (0 << 7));
 }
