@@ -212,11 +212,49 @@ void pwm_off(uint8_t pin);
 #define UART_TDR                    (0x8C/4)
 
 
-void uart_init(unsigned long baud);
-void uart_deinit();
-void uart_send_char(unsigned char data);
-char uart_receive();
-void uart_send_string(const char *data);
+
+typedef enum
+{
+    UART0,
+    UART2,
+    UART3,
+    UART4,
+    UART5
+}UART_SELECT;
+
+#define UART0_TX 14;
+#define UART0_RX 15;
+#define UART0_ALT ALT0;
+
+#define UART2_TX 0;
+#define UART2_RX 1;
+#define UART2_ALT ALT4;
+
+#define UART3_TX 4;
+#define UART3_RX 5;
+#define UART3_ALT ALT4;
+
+#define UART4_TX 8;
+#define UART4_RX 9;
+#define UART4_ALT ALT4;
+
+#define UART5_TX 12;
+#define UART5_RX 13;
+#define UART5_ALT ALT4;
+
+typedef struct
+{
+    uint8_t TX;
+    uint8_t RX;
+    uint8_t ALT;
+}UART_PIN;
+
+
+void uart_init(uint8_t uart_select, uint32_t baud);
+void uart_deinit(uint8_t uart_select);
+void uart_send_char(uint8_t uart_select, unsigned char data);
+char uart_receive(uint8_t uart_select);
+void uart_send_string(uint8_t uart_select, const char *data);
 
 
 //-----------I2C-------------//

@@ -146,6 +146,12 @@ static uint8_t GPIO_GPFSEL_PUD [] =
 } ;
 
 
+UART_PIN UART0_C;
+UART_PIN UART2_C;
+UART_PIN UART3_C;
+UART_PIN UART4_C;
+UART_PIN UART5_C;
+
 void lib_init(){
     int memfd;
     
@@ -168,10 +174,30 @@ void lib_init(){
     timer = base + TIMER_REG;
     
     uart0 = base + UART0_REG;
+    UART0_C.TX = UART0_TX;
+    UART0_C.RX = UART0_RX;
+    UART0_C.ALT = UART0_ALT;
+
     uart2 = base + UART2_REG;
+    UART2_C.TX = UART2_TX;
+    UART2_C.RX = UART2_RX;
+    UART2_C.ALT = UART2_ALT;
+
     uart3 = base + UART3_REG;
+    UART3_C.TX = UART3_TX;
+    UART3_C.RX = UART3_RX;
+    UART3_C.ALT = UART3_ALT;
+
     uart4 = base + UART4_REG;
+    UART4_C.TX = UART4_TX;
+    UART4_C.RX = UART4_RX;
+    UART4_C.ALT = UART4_ALT;
+
     uart5 = base + UART5_REG;
+    UART5_C.TX = UART5_TX;
+    UART5_C.RX = UART5_RX;
+    UART5_C.ALT = UART5_ALT;
+
 
     i2c0 = base + BSC0_REG;
     i2c1 = base + BSC1_REG;
@@ -487,69 +513,199 @@ void pwm_off(uint8_t pin)
 
 //----------UART----------//
 
-// uart0
-void uart_init(unsigned long baud)
+
+static void uart_set_pin(uint8_t uart_select)
 {
-    // Disable pull up/down for pin 14,15 & delay for 150 cycles.
-    pinMode(14, ALT0);
-    pinMode(15, ALT0);
+    switch (uart_select)
+    {
+    case UART0:
+        pinMode(UART0_C.TX, UART0_C.ALT);
+        pinMode(UART0_C.RX, UART0_C.ALT);
+        break;
+    case UART2:
+        pinMode(UART2_C.TX, UART2_C.ALT);
+        pinMode(UART2_C.RX, UART2_C.ALT);
+        break;
+    case UART3:
+        pinMode(UART3_C.TX, UART3_C.ALT);
+        pinMode(UART3_C.RX, UART3_C.ALT);
+        break;
+    case UART4:
+        pinMode(UART4_C.TX, UART4_C.ALT);
+        pinMode(UART4_C.RX, UART4_C.ALT);
+        break;
+    case UART5:
+        pinMode(UART5_C.TX, UART5_C.ALT);
+        pinMode(UART5_C.RX, UART5_C.ALT);
+        break;
+    default:
+        break;
+    }
+}
+
+static void uart_config(volatile uint32_t* uart_base_select, uint32_t baud)
+{
     //Disable UART
-    *(uart0 + UART_CR) = 0;
+    *(uart_base_select + UART_CR) = 0;
 
     // Clear uart Flag Register
-    *(uart0 + UART_FR) = 0;
+    *(uart_base_select + UART_FR) = 0;
 
     // Clear pending interrupts.
-    *(uart0 + UART_ICR) = 0x7FF;
+    *(uart_base_select + UART_ICR) = 0x7FF;
 
     uint32_t value = 16*baud;
     uint32_t value_i = (3000000 / value);
     uint32_t value_f = (3000000000/value - value_i* 1000)*64/1000 + 0.5;
 
     // Divider = 3000000 / (16 * baud)
-    *(uart0 + UART_IBRD) = (int) value_i;
+    *(uart_base_select + UART_IBRD) = (int) value_i;
 
     // Fractional part register
-    *(uart0 + UART_FBRD) = (int) value_f;
+    *(uart_base_select + UART_FBRD) = (int) value_f;
 
     //Clear UART FIFO by writing 0 in FEN bit of LCRH register
-    *(uart0 + UART_LCRH) = (0 << 4);
+    *(uart_base_select + UART_LCRH) = (0 << 4);
 
     // Enable FIFO & 8 bit data transmissio (1 stop bit, no parity)
-	*(uart0 + UART_LCRH) = (1 << 4) | (1 << 5) | (1 << 6);
+	*(uart_base_select + UART_LCRH) = (1 << 4) | (1 << 5) | (1 << 6);
 
     // Mask all interrupts.
-	*(uart0 + UART_IMSC) = (1 << 1) | (1 << 4) | (1 << 5) | (1 << 6) |
+	*(uart_base_select + UART_IMSC) = (1 << 1) | (1 << 4) | (1 << 5) | (1 << 6) |
                                (1 << 7) | (1 << 8) | (1 << 9) | (1 << 10);
 
     // Enable uart4, receive & transfer part of UART.                  
-	*(uart0 + UART_CR) = (1 << 0) | (1 << 8) | (1 << 9);
+	*(uart_base_select + UART_CR) = (1 << 0) | (1 << 8) | (1 << 9);
 }
 
-void uart_deinit()
+// uart0 - fixed speed 115200
+void uart_init(uint8_t uart_select, uint32_t baud)
 {
-    pinMode(14, INPUT);
-    pinMode(15, INPUT);
+    // Disable pull up/down and open for pin tx,rx
+    uart_set_pin(uart_select);
+
+    switch (uart_select)
+    {
+    case UART0:
+        uart_config(uart0, baud);
+        break;
+    case UART2:
+        uart_config(uart2, baud);
+        break;
+    case UART3:
+        uart_config(uart3, baud);
+        break;
+    case UART4:
+        uart_config(uart4, baud);
+        break;
+    case UART5:
+        uart_config(uart5, baud);
+        break;
+
+    default:
+        break;
+    }
 }
 
-void uart_send_char(unsigned char data)
+void uart_deinit(uint8_t uart_select)
 {
-    while (*(uart0 + UART_FR) & (1 << 5)); // Wait until there is room for new data in Transmission fifo
-    *(uart0 + UART_DR) = (unsigned char) data; // Write data in transmission fifo
+    switch (uart_select)
+    {
+    case UART0:
+        pinMode(UART0_C.TX, INPUT);
+        pinMode(UART0_C.RX, INPUT);
+        break;
+    case UART2:
+        pinMode(UART2_C.TX, INPUT);
+        pinMode(UART2_C.RX, INPUT);
+        break;
+    case UART3:
+        pinMode(UART3_C.TX, INPUT);
+        pinMode(UART3_C.RX, INPUT);
+        break;
+    case UART4:
+        pinMode(UART4_C.TX, INPUT);
+        pinMode(UART4_C.RX, INPUT);
+        break;
+    case UART5:
+        pinMode(UART5_C.TX, INPUT);
+        pinMode(UART5_C.RX, INPUT);
+        break;
+    default:
+        break;
+    }
+}
+
+static void uart_send_char_select(volatile uint32_t* uart_base_select, unsigned char data)
+{
+    while (*(uart_base_select + UART_FR) & (1 << 5)); // Wait until there is room for new data in Transmission fifo
+    *(uart_base_select + UART_DR) = (unsigned char) data; // Write data in transmission fifo
+}
+
+
+void uart_send_char(uint8_t uart_select, unsigned char data)
+{
+    switch (uart_select)
+    {
+    case UART0:
+        uart_send_char_select(uart0, data);
+        break;
+    case UART2:
+        uart_send_char_select(uart2, data);
+        break;
+    case UART3:
+        uart_send_char_select(uart3, data);
+        break;
+    case UART4:
+        uart_send_char_select(uart4, data);
+        break;
+    case UART5:
+        uart_send_char_select(uart5, data);
+        break;
+
+    default:
+        break;
+    }
     delay_us(150);
 }
 
-char uart_receive()
+static char uart_receive_select(volatile uint32_t* uart_base_select)
 {
-    while ((*(uart0 + UART_FR) & (1 << 4))); // Wait until data arrives in Rx fifo. Bit 4 is set when RX fifo is empty
-    return (unsigned char) *(uart0 + UART_DR);
+    while ((*(uart_base_select + UART_FR) & (1 << 4))); // Wait until data arrives in Rx fifo. Bit 4 is set when RX fifo is empty
+    return (unsigned char) *(uart_base_select + UART_DR);
 }
 
-void uart_send_string(const char *data)
+char uart_receive(uint8_t uart_select)
+{
+    switch (uart_select)
+    {
+    case UART0:
+        return uart_receive_select(uart0);
+        break;
+    case UART2:
+        return uart_receive_select(uart2);
+        break;
+    case UART3:
+        return uart_receive_select(uart3);
+        break;
+    case UART4:
+        return uart_receive_select(uart4);
+        break;
+    case UART5:
+        return uart_receive_select(uart5);
+        break;
+
+    default:
+        break;
+    }
+    return 0;
+}
+
+void uart_send_string(uint8_t uart_select, const char *data)
 {
     for (size_t i = 0; data[i] != '\0'; i++)
     {
-        uart_send_char( (char) data[i] );
+        uart_send_char(uart_select, data[i] );
     }
     delay_us(150);
 }
@@ -707,7 +863,8 @@ void spi_init()
     pinMode(9, ALT0); //MISO 
     pinMode(10, ALT0);//MOSI -> DIN (brown)
     pinMode(11, ALT0);//SCLK -> CLK (orange)
-    *(spi0 + SPI_CLK) = 250000000/250000;
+    *(spi0 + SPI_CLK) = 0;
+    *(spi0 + SPI_CLK) = 250000000/250000; // 100 mb/s
 }
 
 void spi_deinit()
@@ -721,9 +878,10 @@ void spi_deinit()
 
 void spi_send_receive(uint8_t chip_select, uint8_t *sbuffer, uint8_t *rbuffer, uint8_t size) 
 {
+    *(spi0 + SPI_DLEN) = 0;
     *(spi0 + SPI_DLEN) = size;
-    *(spi0 + SPI_CS) = 0 << 0 | 0 << 1;
-    *(spi0 + SPI_CS) = chip_select << 0 | 1 << 17 | 1 << 18 | 1 << 7;
+    *(spi0 + SPI_CS) = 0 << 0 | 0 << 1 | 0 << 17 | 0 << 18 | 0 << 7;
+    *(spi0 + SPI_CS) = 1 << 7 | chip_select << 0 | 1 << 17 | 1 << 18;
     
     uint32_t read_count = 0;
     uint32_t write_count = 0;
@@ -748,14 +906,8 @@ void spi_send_receive(uint8_t chip_select, uint8_t *sbuffer, uint8_t *rbuffer, u
         }
     }
 
-    // while(!(*(spi0 + SPI_CS) & (1 << 16))) {
-    //     while(*(spi0 + SPI_CS) & (1 << 17)) {
-    //         uint32_t r = *(spi0 + SPI_FIFO);
-    //         printf("Left Over: %d \n", r);
-    //     }
-    // }
-
     *(spi0 + SPI_CS) = (*(spi0 + SPI_CS) & (0 << 7));
+    *(spi0 + SPI_CS) = 0 << 0 | 0 << 1 | 0 << 17 | 0 << 18 | 0 << 7;
 }
 
 void spi_send(uint8_t chip_select, uint8_t *data, uint32_t size) 
